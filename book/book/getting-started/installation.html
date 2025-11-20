@@ -1,0 +1,368 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Installation - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/getting-started/installation.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>This guide will help you install Entrenar and set up your development environment for neural network training with autograd, optimizers, and LoRA/QLoRA fine-tuning.</p>
+<h2 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h2>
+<p>Before installing Entrenar, ensure you have:</p>
+<ul>
+<li><strong>Rust 1.70+</strong>: Install from <a href="https://rustup.rs">rustup.rs</a></li>
+<li><strong>Cargo</strong>: Comes bundled with Rust</li>
+<li><strong>Git</strong>: For cloning the repository (optional)</li>
+</ul>
+<pre><code class="language-bash"># Verify Rust installation
+rustc --version  # Should show 1.70 or higher
+cargo --version
+</code></pre>
+<h2 id="installation-methods"><a class="header" href="#installation-methods">Installation Methods</a></h2>
+<h3 id="method-1-add-as-cargo-dependency-recommended"><a class="header" href="#method-1-add-as-cargo-dependency-recommended">Method 1: Add as Cargo Dependency (Recommended)</a></h3>
+<p>Add Entrenar to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+entrenar = "0.1"
+ndarray = "0.15"  # Required for tensor operations
+</code></pre>
+<p>Then run:</p>
+<pre><code class="language-bash">cargo build
+</code></pre>
+<h3 id="method-2-clone-and-build-from-source"><a class="header" href="#method-2-clone-and-build-from-source">Method 2: Clone and Build from Source</a></h3>
+<p>For development or to run examples:</p>
+<pre><code class="language-bash"># Clone the repository
+git clone https://github.com/paiml/entrenar.git
+cd entrenar
+
+# Run tests to verify installation
+cargo test
+
+# Run quality gates
+cargo clippy -- -D warnings
+cargo fmt --check
+
+# Build in release mode for performance
+cargo build --release
+</code></pre>
+<h2 id="verifying-installation"><a class="header" href="#verifying-installation">Verifying Installation</a></h2>
+<p>Create a simple test file <code>test_install.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">use entrenar::Tensor;
+
+fn main() {
+    // Create a simple tensor
+    let x = Tensor::from_vec(vec![1.0, 2.0, 3.0], true);
+    println!("Tensor created: {:?}", x.data());
+
+    // Test autograd
+    let y = &amp;x * &amp;x;  // y = x²
+    println!("Forward pass successful!");
+
+    println!("✅ Entrenar is installed correctly!");
+}</code></pre></pre>
+<p>Run it:</p>
+<pre><code class="language-bash">cargo run --example test_install
+</code></pre>
+<p>Expected output:</p>
+<pre><code>Tensor created: [1.0, 2.0, 3.0]
+Forward pass successful!
+✅ Entrenar is installed correctly!
+</code></pre>
+<h2 id="feature-flags"><a class="header" href="#feature-flags">Feature Flags</a></h2>
+<p>Entrenar supports optional features via Cargo feature flags:</p>
+<pre><code class="language-toml">[dependencies]
+entrenar = { version = "0.1", features = ["simd", "quantization"] }
+</code></pre>
+<p>Available features:</p>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th><th>Default</th></tr></thead><tbody>
+<tr><td><code>simd</code></td><td>SIMD-accelerated optimizer updates via Trueno</td><td>✅ Enabled</td></tr>
+<tr><td><code>quantization</code></td><td>4-bit quantization for QLoRA</td><td>✅ Enabled</td></tr>
+<tr><td><code>serde</code></td><td>Serialization support for adapters</td><td>✅ Enabled</td></tr>
+</tbody></table>
+</div>
+<h2 id="development-dependencies"><a class="header" href="#development-dependencies">Development Dependencies</a></h2>
+<p>For contributing or running the full test suite:</p>
+<pre><code class="language-toml">[dev-dependencies]
+proptest = "1.0"         # Property-based testing
+approx = "0.5"           # Floating-point comparisons
+serde_json = "1.0"       # JSON serialization
+criterion = "0.5"        # Benchmarking
+cargo-mutants = "24.0"   # Mutation testing
+</code></pre>
+<p>Install development tools:</p>
+<pre><code class="language-bash"># Code coverage
+cargo install cargo-llvm-cov
+
+# Mutation testing
+cargo install cargo-mutants
+
+# Benchmarking
+cargo install cargo-criterion
+</code></pre>
+<h2 id="platform-specific-notes"><a class="header" href="#platform-specific-notes">Platform-Specific Notes</a></h2>
+<h3 id="linux"><a class="header" href="#linux">Linux</a></h3>
+<p>No special configuration required. SIMD acceleration works out of the box on x86_64 and ARM64.</p>
+<h3 id="macos"><a class="header" href="#macos">macOS</a></h3>
+<p>Apple Silicon (M1/M2) users get native ARM64 SIMD support:</p>
+<pre><code class="language-bash"># Verify ARM64 build
+cargo build --release
+file target/release/entrenar
+# Should show: Mach-O 64-bit executable arm64
+</code></pre>
+<h3 id="windows"><a class="header" href="#windows">Windows</a></h3>
+<p>Windows users should use the MSVC toolchain:</p>
+<pre><code class="language-bash">rustup default stable-msvc
+cargo build
+</code></pre>
+<h2 id="ide-setup"><a class="header" href="#ide-setup">IDE Setup</a></h2>
+<h3 id="visual-studio-code"><a class="header" href="#visual-studio-code">Visual Studio Code</a></h3>
+<p>Recommended extensions:</p>
+<ul>
+<li><strong>rust-analyzer</strong>: IntelliSense and code completion</li>
+<li><strong>CodeLLDB</strong>: Debugging support</li>
+<li><strong>Even Better TOML</strong>: Cargo.toml syntax highlighting</li>
+</ul>
+<h3 id="rustrover--intellij-idea"><a class="header" href="#rustrover--intellij-idea">RustRover / IntelliJ IDEA</a></h3>
+<p>The Rust plugin provides excellent support for Entrenar development.</p>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="error-cannot-find-crate-ndarray"><a class="header" href="#error-cannot-find-crate-ndarray">Error: "cannot find crate <code>ndarray</code>"</a></h3>
+<p><strong>Solution</strong>: Add <code>ndarray = "0.15"</code> to your <code>Cargo.toml</code> dependencies.</p>
+<h3 id="error-simd-operations-not-available"><a class="header" href="#error-simd-operations-not-available">Error: "SIMD operations not available"</a></h3>
+<p><strong>Solution</strong>: Ensure you're compiling in release mode for SIMD optimizations:</p>
+<pre><code class="language-bash">cargo build --release
+</code></pre>
+<h3 id="tests-failing-on-fresh-install"><a class="header" href="#tests-failing-on-fresh-install">Tests Failing on Fresh Install</a></h3>
+<p><strong>Solution</strong>: Run with increased stack size for gradient checking tests:</p>
+<pre><code class="language-bash">RUST_MIN_STACK=8388608 cargo test
+</code></pre>
+<h3 id="slow-compile-times"><a class="header" href="#slow-compile-times">Slow Compile Times</a></h3>
+<p><strong>Solution</strong>: Enable parallel compilation:</p>
+<pre><code class="language-bash"># Add to ~/.cargo/config.toml
+[build]
+jobs = 4  # Or number of CPU cores
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>Now that Entrenar is installed:</p>
+<ol>
+<li><strong><a href="./quick-start.html">Quick Start</a></strong> - Train your first neural network</li>
+<li><strong><a href="./first-training-loop.html">First Training Loop</a></strong> - Build a complete training pipeline</li>
+<li><strong><a href="./core-concepts.html">Core Concepts</a></strong> - Understand Entrenar's architecture</li>
+</ol>
+<h2 id="getting-help"><a class="header" href="#getting-help">Getting Help</a></h2>
+<ul>
+<li><strong>Documentation</strong>: <a href="https://paiml.github.io/entrenar">https://paiml.github.io/entrenar</a></li>
+<li><strong>Issues</strong>: <a href="https://github.com/paiml/entrenar/issues">GitHub Issues</a></li>
+<li><strong>Examples</strong>: See <code>examples/</code> directory in the repository</li>
+<li><strong>Tests</strong>: See <code>src/*/tests.rs</code> for usage patterns</li>
+</ul>
+<hr />
+<p><strong>Ready to train?</strong> Continue to <a href="./quick-start.html">Quick Start</a> →</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../introduction.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../getting-started/quick-start.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../introduction.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../getting-started/quick-start.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

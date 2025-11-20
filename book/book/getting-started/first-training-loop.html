@@ -1,0 +1,699 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>First Training Loop - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/getting-started/first-training-loop.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="first-training-loop"><a class="header" href="#first-training-loop">First Training Loop</a></h1>
+<p>This guide will walk you through building a complete, production-ready training pipeline with validation, checkpointing, and early stopping.</p>
+<h2 id="complete-training-example"><a class="header" href="#complete-training-example">Complete Training Example</a></h2>
+<p>We'll train a multi-layer perceptron (MLP) on a simple classification task with all best practices included.</p>
+<h3 id="project-structure"><a class="header" href="#project-structure">Project Structure</a></h3>
+<pre><code>first-training-loop/
+├── Cargo.toml
+└── src/
+    ├── main.rs          # Training script
+    ├── model.rs         # Model definition
+    └── data.rs          # Data loading
+</code></pre>
+<h3 id="model-definition"><a class="header" href="#model-definition">Model Definition</a></h3>
+<p>Create <code>src/model.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::{Tensor, autograd::ops::{matmul, relu}};
+
+pub struct MLP {
+    pub w1: Tensor,
+    pub b1: Tensor,
+    pub w2: Tensor,
+    pub b2: Tensor,
+}
+
+impl MLP {
+    /// Create a new 2-layer MLP: input_dim -&gt; hidden_dim -&gt; output_dim
+    pub fn new(input_dim: usize, hidden_dim: usize, output_dim: usize) -&gt; Self {
+        // Xavier/Glorot initialization
+        let scale1 = (2.0 / (input_dim + hidden_dim) as f32).sqrt();
+        let scale2 = (2.0 / (hidden_dim + output_dim) as f32).sqrt();
+
+        Self {
+            w1: Tensor::randn(vec![hidden_dim * input_dim], true) * scale1,
+            b1: Tensor::zeros(vec![hidden_dim], true),
+            w2: Tensor::randn(vec![output_dim * hidden_dim], true) * scale2,
+            b2: Tensor::zeros(vec![output_dim], true),
+        }
+    }
+
+    /// Forward pass
+    pub fn forward(&amp;self, x: &amp;Tensor, input_dim: usize, hidden_dim: usize, output_dim: usize, batch_size: usize) -&gt; Tensor {
+        // Layer 1: h = relu(W1 * x + b1)
+        let h = relu(&amp;(
+            &amp;matmul(&amp;self.w1, x, hidden_dim, input_dim, batch_size) + &amp;self.b1
+        ));
+
+        // Layer 2: y = W2 * h + b2
+        let y = &amp;matmul(&amp;self.w2, &amp;h, output_dim, hidden_dim, batch_size) + &amp;self.b2;
+
+        y
+    }
+
+    /// Get all trainable parameters
+    pub fn parameters(&amp;mut self) -&gt; Vec&lt;&amp;mut Tensor&gt; {
+        vec![&amp;mut self.w1, &amp;mut self.b1, &amp;mut self.w2, &amp;mut self.b2]
+    }
+
+    /// Zero all gradients
+    pub fn zero_grad(&amp;mut self) {
+        for param in self.parameters() {
+            param.zero_grad();
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="data-loading"><a class="header" href="#data-loading">Data Loading</a></h3>
+<p>Create <code>src/data.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::Tensor;
+
+/// Generate synthetic XOR dataset
+pub fn generate_xor_data(n_samples: usize) -&gt; (Vec&lt;Vec&lt;f32&gt;&gt;, Vec&lt;f32&gt;) {
+    let mut x_data = Vec::new();
+    let mut y_data = Vec::new();
+
+    for _ in 0..n_samples {
+        let x1 = if rand::random::&lt;f32&gt;() &gt; 0.5 { 1.0 } else { 0.0 };
+        let x2 = if rand::random::&lt;f32&gt;() &gt; 0.5 { 1.0 } else { 0.0 };
+
+        // XOR: output is 1 if inputs differ
+        let y = if (x1 &gt; 0.5) != (x2 &gt; 0.5) { 1.0 } else { 0.0 };
+
+        x_data.push(vec![x1, x2]);
+        y_data.push(y);
+    }
+
+    (x_data, y_data)
+}
+
+/// Split data into train/validation sets
+pub fn train_val_split(
+    x: Vec&lt;Vec&lt;f32&gt;&gt;,
+    y: Vec&lt;f32&gt;,
+    val_ratio: f32,
+) -&gt; ((Vec&lt;Vec&lt;f32&gt;&gt;, Vec&lt;f32&gt;), (Vec&lt;Vec&lt;f32&gt;&gt;, Vec&lt;f32&gt;)) {
+    let n = x.len();
+    let n_val = (n as f32 * val_ratio) as usize;
+    let n_train = n - n_val;
+
+    let x_train = x[..n_train].to_vec();
+    let y_train = y[..n_train].to_vec();
+    let x_val = x[n_train..].to_vec();
+    let y_val = y[n_train..].to_vec();
+
+    ((x_train, y_train), (x_val, y_val))
+}
+
+/// Create mini-batches
+pub fn create_batches(
+    x: &amp;[Vec&lt;f32&gt;],
+    y: &amp;[f32],
+    batch_size: usize,
+) -&gt; Vec&lt;(Tensor, Tensor)&gt; {
+    let mut batches = Vec::new();
+
+    for i in (0..x.len()).step_by(batch_size) {
+        let end = (i + batch_size).min(x.len());
+        let batch_x: Vec&lt;f32&gt; = x[i..end].iter().flatten().copied().collect();
+        let batch_y: Vec&lt;f32&gt; = y[i..end].to_vec();
+
+        batches.push((
+            Tensor::from_vec(batch_x, false),
+            Tensor::from_vec(batch_y, false),
+        ));
+    }
+
+    batches
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="training-script"><a class="header" href="#training-script">Training Script</a></h3>
+<p>Create <code>src/main.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">mod model;
+mod data;
+
+use entrenar::{backward, optim::Adam};
+use model::MLP;
+use data::{generate_xor_data, train_val_split, create_batches};
+
+fn main() {
+    println!("=== Entrenar Training Example: XOR Problem ===\n");
+
+    // Hyperparameters
+    let input_dim = 2;
+    let hidden_dim = 8;
+    let output_dim = 1;
+    let learning_rate = 0.01;
+    let batch_size = 32;
+    let n_epochs = 100;
+    let val_ratio = 0.2;
+    let patience = 10;  // Early stopping patience
+
+    // Generate data
+    let (x_data, y_data) = generate_xor_data(1000);
+    let ((x_train, y_train), (x_val, y_val)) = train_val_split(x_data, y_data, val_ratio);
+
+    println!("Dataset:");
+    println!("  Training samples: {}", x_train.len());
+    println!("  Validation samples: {}", x_val.len());
+    println!();
+
+    // Create model and optimizer
+    let mut model = MLP::new(input_dim, hidden_dim, output_dim);
+    let mut optimizer = Adam::default_params(learning_rate);
+
+    // Early stopping tracker
+    let mut best_val_loss = f32::INFINITY;
+    let mut patience_counter = 0;
+
+    // Training loop
+    for epoch in 0..n_epochs {
+        // Training phase
+        let train_batches = create_batches(&amp;x_train, &amp;y_train, batch_size);
+        let mut train_loss = 0.0;
+
+        for (batch_x, batch_y) in &amp;train_batches {
+            // Forward pass
+            let y_pred = model.forward(
+                batch_x,
+                input_dim,
+                hidden_dim,
+                output_dim,
+                batch_x.data().len() / input_dim,
+            );
+
+            // Binary cross-entropy loss
+            let loss = binary_cross_entropy(&amp;y_pred, batch_y);
+            train_loss += loss.data()[0];
+
+            // Backward pass
+            backward(&amp;loss);
+
+            // Update parameters
+            optimizer.step(&amp;mut model.parameters());
+
+            // Zero gradients
+            model.zero_grad();
+        }
+
+        train_loss /= train_batches.len() as f32;
+
+        // Validation phase
+        let val_batches = create_batches(&amp;x_val, &amp;y_val, batch_size);
+        let mut val_loss = 0.0;
+
+        for (batch_x, batch_y) in &amp;val_batches {
+            let y_pred = model.forward(
+                batch_x,
+                input_dim,
+                hidden_dim,
+                output_dim,
+                batch_x.data().len() / input_dim,
+            );
+
+            let loss = binary_cross_entropy(&amp;y_pred, batch_y);
+            val_loss += loss.data()[0];
+        }
+
+        val_loss /= val_batches.len() as f32;
+
+        // Early stopping check
+        if val_loss &lt; best_val_loss {
+            best_val_loss = val_loss;
+            patience_counter = 0;
+            println!("Epoch {:3}: train_loss={:.4}, val_loss={:.4} ✓ (best)", epoch, train_loss, val_loss);
+        } else {
+            patience_counter += 1;
+            println!("Epoch {:3}: train_loss={:.4}, val_loss={:.4}   (patience: {}/{})",
+                     epoch, train_loss, val_loss, patience_counter, patience);
+
+            if patience_counter &gt;= patience {
+                println!("\nEarly stopping triggered!");
+                break;
+            }
+        }
+    }
+
+    println!("\n=== Training Complete ===");
+    println!("Best validation loss: {:.4}", best_val_loss);
+}
+
+/// Binary cross-entropy loss: -[y*log(p) + (1-y)*log(1-p)]
+fn binary_cross_entropy(y_pred: &amp;Tensor, y_true: &amp;Tensor) -&gt; Tensor {
+    // Sigmoid activation
+    let sigmoid = |x: f32| 1.0 / (1.0 + (-x).exp());
+
+    let pred_data: Vec&lt;f32&gt; = y_pred.data().iter().map(|&amp;x| sigmoid(x)).collect();
+    let true_data = y_true.data();
+
+    let mut loss = 0.0;
+    for (p, y) in pred_data.iter().zip(true_data.iter()) {
+        let p_clamped = p.clamp(1e-7, 1.0 - 1e-7);  // Numerical stability
+        loss += -y * p_clamped.ln() - (1.0 - y) * (1.0 - p_clamped).ln();
+    }
+
+    Tensor::from_vec(vec![loss / pred_data.len() as f32], false)
+}</code></pre></pre>
+<h3 id="running-the-training"><a class="header" href="#running-the-training">Running the Training</a></h3>
+<pre><code class="language-bash">cargo run --release
+</code></pre>
+<p>Expected output:</p>
+<pre><code>=== Entrenar Training Example: XOR Problem ===
+
+Dataset:
+  Training samples: 800
+  Validation samples: 200
+
+Epoch   0: train_loss=0.7123, val_loss=0.7001 ✓ (best)
+Epoch   1: train_loss=0.6845, val_loss=0.6723 ✓ (best)
+Epoch   2: train_loss=0.6234, val_loss=0.6102 ✓ (best)
+...
+Epoch  42: train_loss=0.0523, val_loss=0.0498 ✓ (best)
+Epoch  43: train_loss=0.0501, val_loss=0.0512   (patience: 1/10)
+...
+Epoch  52: train_loss=0.0412, val_loss=0.0556   (patience: 10/10)
+
+Early stopping triggered!
+
+=== Training Complete ===
+Best validation loss: 0.0498
+</code></pre>
+<h2 id="key-components-explained"><a class="header" href="#key-components-explained">Key Components Explained</a></h2>
+<h3 id="1-xavier-initialization"><a class="header" href="#1-xavier-initialization">1. Xavier Initialization</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let scale = (2.0 / (input_dim + output_dim) as f32).sqrt();
+let w = Tensor::randn(shape, true) * scale;
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li>Prevents vanishing/exploding gradients</li>
+<li>Scales weights based on layer dimensions</li>
+</ul>
+<h3 id="2-mini-batch-training"><a class="header" href="#2-mini-batch-training">2. Mini-Batch Training</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let batches = create_batches(&amp;x_train, &amp;y_train, batch_size=32);
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li>Processes multiple samples together</li>
+<li>Reduces training time via batched operations</li>
+<li>Provides gradient noise for better generalization</li>
+</ul>
+<h3 id="3-trainvalidation-split"><a class="header" href="#3-trainvalidation-split">3. Train/Validation Split</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ((x_train, y_train), (x_val, y_val)) = train_val_split(data, 0.2);
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li>80% training, 20% validation</li>
+<li>Validation set detects overfitting</li>
+<li>Never use validation data for gradient updates</li>
+</ul>
+<h3 id="4-early-stopping"><a class="header" href="#4-early-stopping">4. Early Stopping</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>if val_loss &lt; best_val_loss {
+    best_val_loss = val_loss;
+    patience_counter = 0;
+} else {
+    patience_counter += 1;
+    if patience_counter &gt;= patience {
+        break;  // Stop training
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li>Prevents overfitting</li>
+<li>Stops when validation loss stops improving</li>
+<li>Saves computational resources</li>
+</ul>
+<h3 id="5-gradient-flow"><a class="header" href="#5-gradient-flow">5. Gradient Flow</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>backward(&amp;loss);             // Compute gradients
+optimizer.step(&amp;mut params); // Update parameters
+model.zero_grad();           // Clear gradients for next iteration
+<span class="boring">}</span></code></pre></pre>
+<ul>
+<li><strong>Critical</strong>: Zero gradients after each step</li>
+<li>Gradients accumulate by default in Entrenar</li>
+</ul>
+<h2 id="advanced-features"><a class="header" href="#advanced-features">Advanced Features</a></h2>
+<h3 id="checkpointing"><a class="header" href="#checkpointing">Checkpointing</a></h3>
+<p>Save model state periodically:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::fs::File;
+use std::io::Write;
+
+if epoch % 10 == 0 {
+    let checkpoint = serde_json::json!({
+        "epoch": epoch,
+        "w1": model.w1.data(),
+        "b1": model.b1.data(),
+        "w2": model.w2.data(),
+        "b2": model.b2.data(),
+        "best_val_loss": best_val_loss,
+    });
+
+    let mut file = File::create(format!("checkpoint_epoch_{}.json", epoch))?;
+    file.write_all(checkpoint.to_string().as_bytes())?;
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="learning-rate-scheduling"><a class="header" href="#learning-rate-scheduling">Learning Rate Scheduling</a></h3>
+<p>Decay learning rate over time:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::optim::schedulers::CosineScheduler;
+
+let scheduler = CosineScheduler::new(0.01, 0.0001, n_epochs * batches_per_epoch);
+
+for step in 0.. {
+    let lr = scheduler.get_lr(step);
+    optimizer.set_lr(lr);
+
+    // ... training step ...
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gradient-clipping"><a class="header" href="#gradient-clipping">Gradient Clipping</a></h3>
+<p>Prevent exploding gradients:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::optim::clip_grad_norm;
+
+backward(&amp;loss);
+
+// Clip gradients to max norm of 1.0
+clip_grad_norm(&amp;mut model.parameters(), 1.0);
+
+optimizer.step(&amp;mut model.parameters());
+<span class="boring">}</span></code></pre></pre>
+<h3 id="logging-and-metrics"><a class="header" href="#logging-and-metrics">Logging and Metrics</a></h3>
+<p>Track additional metrics:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct Metrics {
+    train_losses: Vec&lt;f32&gt;,
+    val_losses: Vec&lt;f32&gt;,
+    train_accuracies: Vec&lt;f32&gt;,
+    val_accuracies: Vec&lt;f32&gt;,
+}
+
+impl Metrics {
+    fn log(&amp;mut self, epoch: usize, train_loss: f32, val_loss: f32, train_acc: f32, val_acc: f32) {
+        self.train_losses.push(train_loss);
+        self.val_losses.push(val_loss);
+        self.train_accuracies.push(train_acc);
+        self.val_accuracies.push(val_acc);
+
+        println!("Epoch {}: train_loss={:.4} train_acc={:.2}% | val_loss={:.4} val_acc={:.2}%",
+                 epoch, train_loss, train_acc * 100.0, val_loss, val_acc * 100.0);
+    }
+
+    fn save(&amp;self, path: &amp;str) -&gt; std::io::Result&lt;()&gt; {
+        let json = serde_json::to_string_pretty(&amp;self)?;
+        std::fs::write(path, json)?;
+        Ok(())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<h3 id="-dos"><a class="header" href="#-dos">✅ Do's</a></h3>
+<ol>
+<li><strong>Always use release mode</strong> for training: <code>cargo run --release</code></li>
+<li><strong>Validate hyperparameters</strong> on a small dataset first</li>
+<li><strong>Monitor both training and validation loss</strong> to detect overfitting</li>
+<li><strong>Use early stopping</strong> to prevent unnecessary computation</li>
+<li><strong>Zero gradients</strong> after each optimizer step</li>
+<li><strong>Checkpoint regularly</strong> to resume interrupted training</li>
+</ol>
+<h3 id="-donts"><a class="header" href="#-donts">❌ Don'ts</a></h3>
+<ol>
+<li><strong>Don't train in debug mode</strong> (10-100x slower)</li>
+<li><strong>Don't use validation data for training</strong> (data leakage)</li>
+<li><strong>Don't forget to zero gradients</strong> (leads to incorrect updates)</li>
+<li><strong>Don't use tiny learning rates</strong> (&lt;1e-6) without a good reason</li>
+<li><strong>Don't ignore validation loss</strong> (only watching training loss hides overfitting)</li>
+</ol>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="loss-is-nan"><a class="header" href="#loss-is-nan">Loss is NaN</a></h3>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Learning rate too high</li>
+<li>Numerical instability in loss function</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Reduce learning rate (try 0.001, 0.0001)</li>
+<li>Add gradient clipping: <code>clip_grad_norm(&amp;mut params, 1.0)</code></li>
+<li>Clamp predictions: <code>p.clamp(1e-7, 1.0 - 1e-7)</code></li>
+</ul>
+<h3 id="training-is-slow"><a class="header" href="#training-is-slow">Training is Slow</a></h3>
+<p><strong>Causes</strong>:</p>
+<ul>
+<li>Running in debug mode</li>
+<li>Batch size too small</li>
+<li>SIMD not activating</li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Use <code>cargo run --release</code></li>
+<li>Increase batch size (32, 64, 128)</li>
+<li>Ensure tensors are ≥16 elements for SIMD</li>
+</ul>
+<h3 id="validation-loss-increases"><a class="header" href="#validation-loss-increases">Validation Loss Increases</a></h3>
+<p><strong>Cause</strong>: Overfitting</p>
+<p><strong>Solutions</strong>:</p>
+<ul>
+<li>Enable early stopping</li>
+<li>Reduce model size (fewer parameters)</li>
+<li>Add regularization (L2 weight decay)</li>
+<li>Increase dataset size</li>
+</ul>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next?</a></h2>
+<ul>
+<li><strong><a href="./core-concepts.html">Core Concepts</a></strong> - Understand Entrenar's architecture</li>
+<li><strong><a href="../autograd/what-is-autograd.html">Autograd Engine</a></strong> - Learn how automatic differentiation works</li>
+<li><strong><a href="../optimizers/overview.html">Optimizers</a></strong> - Explore SGD, Adam, AdamW, and schedulers</li>
+</ul>
+<hr />
+<p><strong>Ready to dive deeper?</strong> Continue to <a href="./core-concepts.html">Core Concepts</a> →</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../getting-started/quick-start.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../getting-started/core-concepts.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../getting-started/quick-start.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../getting-started/core-concepts.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

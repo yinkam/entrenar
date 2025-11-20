@@ -1,0 +1,628 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Backward Pass - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/autograd/backward-pass.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="backward-pass"><a class="header" href="#backward-pass">Backward Pass</a></h1>
+<p>The <strong>backward pass</strong> computes gradients by traversing the computational graph in reverse order, applying the chain rule at each operation. This chapter explains the mechanics of gradient propagation in Entrenar.</p>
+<h2 id="the-chain-rule"><a class="header" href="#the-chain-rule">The Chain Rule</a></h2>
+<p>The foundation of backpropagation is the <strong>multivariate chain rule</strong>:</p>
+<pre><code>Given: z = f(y) and y = g(x)
+Then:  dz/dx = dz/dy * dy/dx
+</code></pre>
+<p>For neural networks with many layers:</p>
+<pre><code>Loss = f_n(f_{n-1}(...f_2(f_1(x))))
+
+dLoss/dx = dLoss/df_n * df_n/df_{n-1} * ... * df_2/df_1 * df_1/dx
+</code></pre>
+<p>Entrenar automates this chain rule application.</p>
+<h2 id="backward-pass-algorithm"><a class="header" href="#backward-pass-algorithm">Backward Pass Algorithm</a></h2>
+<h3 id="high-level-steps"><a class="header" href="#high-level-steps">High-Level Steps</a></h3>
+<ol>
+<li><strong>Seed the gradient</strong>: Set output gradient to 1.0</li>
+<li><strong>Traverse in reverse</strong>: Process tape entries from end to start</li>
+<li><strong>Apply local gradients</strong>: Each operation computes input gradients from output gradient</li>
+<li><strong>Accumulate gradients</strong>: Sum contributions when tensors have multiple consumers</li>
+</ol>
+<h3 id="pseudocode"><a class="header" href="#pseudocode">Pseudocode</a></h3>
+<pre><code class="language-python">def backward(output_tensor):
+    # Step 1: Seed gradient
+    output_tensor.grad = 1.0
+
+    # Step 2: Get tape entries
+    tape = get_global_tape()
+
+    # Step 3: Reverse traversal
+    for entry in reversed(tape):
+        # Get output gradient (already computed)
+        grad_output = entry.output.grad
+
+        # Step 4: Compute input gradients (chain rule)
+        grad_inputs = entry.operation.backward(grad_output)
+
+        # Step 5: Accumulate into input tensors
+        for (input_tensor, grad_input) in zip(entry.inputs, grad_inputs):
+            input_tensor.grad += grad_input  # Accumulation!
+</code></pre>
+<h2 id="operation-specific-backward-rules"><a class="header" href="#operation-specific-backward-rules">Operation-Specific Backward Rules</a></h2>
+<p>Each operation implements a <code>backward</code> method that computes input gradients from output gradients.</p>
+<h3 id="addition-z--x--y"><a class="header" href="#addition-z--x--y">Addition: z = x + y</a></h3>
+<p><strong>Forward</strong>: <code>z_i = x_i + y_i</code></p>
+<p><strong>Backward</strong>:</p>
+<pre><code>∂z/∂x = 1  (gradient passes through unchanged)
+∂z/∂y = 1
+
+Therefore:
+∂Loss/∂x = ∂Loss/∂z * 1 = ∂Loss/∂z
+∂Loss/∂y = ∂Loss/∂z * 1 = ∂Loss/∂z
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn add_backward(grad_output: &amp;[f32], x: &amp;Tensor, y: &amp;Tensor) {
+    // Gradient flows equally to both inputs
+    x.accumulate_grad(grad_output);  // dx = dz
+    y.accumulate_grad(grad_output);  // dy = dz
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="multiplication-z--x--y"><a class="header" href="#multiplication-z--x--y">Multiplication: z = x * y</a></h3>
+<p><strong>Forward</strong>: <code>z_i = x_i * y_i</code></p>
+<p><strong>Backward</strong>:</p>
+<pre><code>∂z/∂x = y  (gradient scaled by other input)
+∂z/∂y = x
+
+Therefore:
+∂Loss/∂x = ∂Loss/∂z * y
+∂Loss/∂y = ∂Loss/∂z * x
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn mul_backward(grad_output: &amp;[f32], x: &amp;Tensor, y: &amp;Tensor) {
+    // Gradient to x scaled by y's value
+    let grad_x: Vec&lt;f32&gt; = grad_output.iter()
+        .zip(y.data().iter())
+        .map(|(g, y_val)| g * y_val)
+        .collect();
+    x.accumulate_grad(&amp;grad_x);
+
+    // Gradient to y scaled by x's value
+    let grad_y: Vec&lt;f32&gt; = grad_output.iter()
+        .zip(x.data().iter())
+        .map(|(g, x_val)| g * x_val)
+        .collect();
+    y.accumulate_grad(&amp;grad_y);
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrix-multiplication-c--a--b"><a class="header" href="#matrix-multiplication-c--a--b">Matrix Multiplication: C = A @ B</a></h3>
+<p><strong>Forward</strong>: <code>C = A @ B</code> (dimensions: <code>C[m,n] = A[m,k] @ B[k,n]</code>)</p>
+<p><strong>Backward</strong>:</p>
+<pre><code>∂Loss/∂A = ∂Loss/∂C @ B^T
+∂Loss/∂B = A^T @ ∂Loss/∂C
+</code></pre>
+<p><strong>Derivation</strong> (element-wise):</p>
+<pre><code>C[i,j] = Σ_k A[i,k] * B[k,j]
+
+∂C[i,j]/∂A[i,k] = B[k,j]  =&gt; ∂Loss/∂A[i,k] = Σ_j ∂Loss/∂C[i,j] * B[k,j]
+                                             = (∂Loss/∂C @ B^T)[i,k]
+
+∂C[i,j]/∂B[k,j] = A[i,k]  =&gt; ∂Loss/∂B[k,j] = Σ_i ∂Loss/∂C[i,j] * A[i,k]
+                                             = (A^T @ ∂Loss/∂C)[k,j]
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn matmul_backward(
+    grad_output: &amp;Tensor,  // dC
+    a: &amp;Tensor,            // A
+    b: &amp;Tensor,            // B
+    m: usize,              // rows of A
+    k: usize,              // cols of A = rows of B
+    n: usize,              // cols of B
+) {
+    // dA = dC @ B^T
+    let b_transpose = transpose(b, k, n);
+    let grad_a = matmul(grad_output, &amp;b_transpose, m, n, k);
+    a.accumulate_grad(grad_a.data());
+
+    // dB = A^T @ dC
+    let a_transpose = transpose(a, m, k);
+    let grad_b = matmul(&amp;a_transpose, grad_output, k, m, n);
+    b.accumulate_grad(grad_b.data());
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="relu-y--max0-x"><a class="header" href="#relu-y--max0-x">ReLU: y = max(0, x)</a></h3>
+<p><strong>Forward</strong>: <code>y_i = max(0, x_i)</code></p>
+<p><strong>Backward</strong>:</p>
+<pre><code>∂y/∂x = {1 if x &gt; 0, 0 otherwise}
+
+Therefore:
+∂Loss/∂x_i = ∂Loss/∂y_i * (x_i &gt; 0 ? 1 : 0)
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn relu_backward(grad_output: &amp;[f32], x: &amp;Tensor) {
+    let grad_x: Vec&lt;f32&gt; = grad_output.iter()
+        .zip(x.data().iter())
+        .map(|(g, &amp;x_val)| {
+            if x_val &gt; 0.0 {
+                *g  // Gradient passes through
+            } else {
+                0.0  // Gradient blocked
+            }
+        })
+        .collect();
+
+    x.accumulate_grad(&amp;grad_x);
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gelu-y--x--Φx"><a class="header" href="#gelu-y--x--Φx">GELU: y = x * Φ(x)</a></h3>
+<p><strong>Forward</strong>: <code>y = x * Φ(x)</code> where <code>Φ</code> is the Gaussian CDF</p>
+<p><strong>Backward</strong> (using product rule):</p>
+<pre><code>∂y/∂x = Φ(x) + x * φ(x)
+
+where φ(x) = (1/√(2π)) * exp(-x²/2) is the Gaussian PDF
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn gelu_backward(grad_output: &amp;[f32], x: &amp;Tensor) {
+    const SQRT_2_PI: f32 = 2.5066282746;  // √(2π)
+
+    let grad_x: Vec&lt;f32&gt; = grad_output.iter()
+        .zip(x.data().iter())
+        .map(|(g, &amp;x_val)| {
+            let phi = gaussian_cdf(x_val);          // Φ(x)
+            let phi_prime = (-0.5 * x_val.powi(2)).exp() / SQRT_2_PI;  // φ(x)
+            let local_grad = phi + x_val * phi_prime;
+
+            g * local_grad
+        })
+        .collect();
+
+    x.accumulate_grad(&amp;grad_x);
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="layer-normalization"><a class="header" href="#layer-normalization">Layer Normalization</a></h3>
+<p><strong>Forward</strong>:</p>
+<pre><code>y = (x - μ) / σ
+
+where:
+  μ = mean(x)
+  σ = √(variance(x) + ε)
+</code></pre>
+<p><strong>Backward</strong> (complex chain rule):</p>
+<pre><code>∂Loss/∂x_i = (1/σ) * [∂Loss/∂y_i - (1/n)Σ_j ∂Loss/∂y_j - (1/n)y_i Σ_j(∂Loss/∂y_j * y_j)]
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn layernorm_backward(
+    grad_output: &amp;[f32],
+    x: &amp;Tensor,
+    normalized: &amp;[f32],  // y values from forward pass
+    mean: f32,
+    variance: f32,
+) {
+    let n = grad_output.len() as f32;
+    let std_inv = 1.0 / (variance + 1e-5).sqrt();
+
+    // Compute sum terms
+    let sum_grad: f32 = grad_output.iter().sum();
+    let sum_grad_y: f32 = grad_output.iter()
+        .zip(normalized.iter())
+        .map(|(g, y)| g * y)
+        .sum();
+
+    // Compute gradient for each element
+    let grad_x: Vec&lt;f32&gt; = grad_output.iter()
+        .zip(normalized.iter())
+        .map(|(g, y)| {
+            std_inv * (g - sum_grad / n - y * sum_grad_y / n)
+        })
+        .collect();
+
+    x.accumulate_grad(&amp;grad_x);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="gradient-accumulation"><a class="header" href="#gradient-accumulation">Gradient Accumulation</a></h2>
+<p>When a tensor is used multiple times, gradients accumulate:</p>
+<h3 id="example-z--x--x"><a class="header" href="#example-z--x--x">Example: z = x + x</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = Tensor::from_vec(vec![2.0], true);
+let z = &amp;x + &amp;x;  // z = 2x
+
+backward(&amp;z);
+
+println!("dz/dx = {}", x.grad()[0]);  // 2.0 ✅
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Why 2.0?</strong></p>
+<pre><code>Graph:
+    x ─┬─&gt; Add -&gt; z
+       └─&gt;
+
+Backward:
+  From first input:  dx = dz * 1 = 1.0
+  From second input: dx = dz * 1 = 1.0
+  Total:             dx = 1.0 + 1.0 = 2.0 ✅
+</code></pre>
+<p><strong>Implementation</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Always use += for gradient accumulation
+x.grad_mut()[i] += gradient_contribution;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="complex-example"><a class="header" href="#complex-example">Complex Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = Tensor::from_vec(vec![3.0], true);
+let y = Tensor::from_vec(vec![4.0], true);
+
+let a = &amp;x + &amp;y;   // a = x + y = 7
+let b = &amp;x * &amp;y;   // b = x * y = 12
+let c = &amp;a + &amp;b;   // c = a + b = 19
+
+backward(&amp;c);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Gradient computation:</strong></p>
+<pre><code>Tape (forward order):
+  [0] Add(x, y) -&gt; a
+  [1] Mul(x, y) -&gt; b
+  [2] Add(a, b) -&gt; c
+
+Backward (reverse order):
+  [2] Add: da = dc = 1.0, db = dc = 1.0
+  [1] Mul: dx += db * y = 1.0 * 4 = 4.0
+           dy += db * x = 1.0 * 3 = 3.0
+  [0] Add: dx += da = 1.0
+           dy += da = 1.0
+
+Final gradients:
+  dx = 4.0 + 1.0 = 5.0  ✅ (= y + 1)
+  dy = 3.0 + 1.0 = 4.0  ✅ (= x + 1)
+</code></pre>
+<p><strong>Manual verification:</strong></p>
+<pre><code>c = (x + y) + (x * y) = x + y + xy
+dc/dx = 1 + y = 1 + 4 = 5.0 ✅
+dc/dy = 1 + x = 1 + 3 = 4.0 ✅
+</code></pre>
+<h2 id="handling-non-differentiable-points"><a class="header" href="#handling-non-differentiable-points">Handling Non-Differentiable Points</a></h2>
+<p>Some operations have non-differentiable points where we use <strong>subgradients</strong>.</p>
+<h3 id="relu-at-x0"><a class="header" href="#relu-at-x0">ReLU at x=0</a></h3>
+<pre><code>ReLU(x) = max(0, x)
+
+Derivative:
+  d/dx ReLU(x) = {1 if x &gt; 0, 0 if x &lt; 0, ??? if x = 0}
+</code></pre>
+<p><strong>Solution</strong>: Use subgradient convention:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>if x_val &gt; 0.0 {
+    1.0
+} else {
+    0.0  // Subgradient at x=0 (could also use 1.0 or 0.5)
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>In practice</strong>: Exact x=0 is rare with floating-point numbers, so the choice rarely matters.</p>
+<h2 id="detaching-gradients"><a class="header" href="#detaching-gradients">Detaching Gradients</a></h2>
+<p>Sometimes you want to <strong>stop gradients</strong> from flowing:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = Tensor::from_vec(vec![2.0], true);
+let y = &amp;x * &amp;x;  // y = x²
+
+// Detach: treat y as a constant for further operations
+let y_detached = Tensor::from_vec(y.data().clone(), false);  // requires_grad=false
+
+let z = &amp;y_detached + &amp;x;  // z = y_detached + x (y treated as constant)
+
+backward(&amp;z);
+
+println!("dz/dx = {}", x.grad()[0]);  // 1.0 (only from addition, not from y)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Use case</strong>: Stopping gradient flow in certain model parts (e.g., frozen layers).</p>
+<h2 id="in-place-operations-warning"><a class="header" href="#in-place-operations-warning">In-Place Operations Warning</a></h2>
+<p><strong>In-place modifications break the computational graph:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut x = Tensor::from_vec(vec![1.0, 2.0], true);
+let y = &amp;x * &amp;x;
+
+// ❌ BAD: Modify x in-place
+x.data_mut()[0] = 5.0;
+
+backward(&amp;y);  // ⚠️ Undefined behavior! x changed after being used
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Solution</strong>: Entrenar prevents in-place modifications for tensors with <code>requires_grad=true</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Entrenar's safeguard
+if x.requires_grad() {
+    panic!("Cannot modify tensor with requires_grad=true in-place");
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="computational-complexity"><a class="header" href="#computational-complexity">Computational Complexity</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Forward</th><th>Backward</th><th>Total</th></tr></thead><tbody>
+<tr><td><strong>Add/Mul</strong></td><td>O(n)</td><td>O(n)</td><td>O(n)</td></tr>
+<tr><td><strong>MatMul</strong></td><td>O(mnk)</td><td>O(mnk)</td><td>O(mnk)</td></tr>
+<tr><td><strong>ReLU</strong></td><td>O(n)</td><td>O(n)</td><td>O(n)</td></tr>
+<tr><td><strong>LayerNorm</strong></td><td>O(n)</td><td>O(n)</td><td>O(n)</td></tr>
+<tr><td><strong>Attention</strong></td><td>O(n²d)</td><td>O(n²d)</td><td>O(n²d)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Key insight</strong>: Backward pass has same asymptotic complexity as forward pass.</p>
+<h2 id="debugging-gradients"><a class="header" href="#debugging-gradients">Debugging Gradients</a></h2>
+<h3 id="check-if-gradients-are-computed"><a class="header" href="#check-if-gradients-are-computed">Check if Gradients are Computed</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = Tensor::from_vec(vec![2.0], true);
+let y = &amp;x * &amp;x;
+
+backward(&amp;y);
+
+if x.grad()[0] == 0.0 {
+    eprintln!("Warning: Gradient is zero (might indicate issue)");
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gradient-explosionvanishing"><a class="header" href="#gradient-explosionvanishing">Gradient Explosion/Vanishing</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn check_gradients(params: &amp;[&amp;Tensor]) {
+    for param in params {
+        let grad_norm = param.grad().iter().map(|g| g * g).sum::&lt;f32&gt;().sqrt();
+
+        if grad_norm &gt; 100.0 {
+            eprintln!("Warning: Gradient explosion (norm={})", grad_norm);
+        } else if grad_norm &lt; 1e-7 {
+            eprintln!("Warning: Gradient vanishing (norm={})", grad_norm);
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gradient-checking"><a class="header" href="#gradient-checking">Gradient Checking</a></h3>
+<p>Always validate custom operations with finite differences:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[test]
+fn test_my_operation_backward() {
+    let x = Tensor::from_vec(vec![1.0, 2.0, 3.0], true);
+    let y = my_custom_operation(&amp;x);
+
+    backward(&amp;y);
+
+    // Compare with numerical gradient
+    check_gradient(&amp;y, &amp;x, epsilon=1e-3, threshold=0.2);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="key-takeaways"><a class="header" href="#key-takeaways">Key Takeaways</a></h2>
+<ol>
+<li><strong>Backward pass applies chain rule</strong> in reverse topological order</li>
+<li><strong>Each operation implements local gradient rule</strong> (e.g., mul: dx = y*dz)</li>
+<li><strong>Gradients accumulate</strong> when tensors have multiple consumers</li>
+<li><strong>Matrix operations</strong> use transposition for gradient computation</li>
+<li><strong>Nonlinear activations</strong> use derivative of activation function</li>
+<li><strong>Normalization</strong> requires saved statistics from forward pass</li>
+<li><strong>Complexity</strong> of backward equals forward (asymptotically)</li>
+</ol>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next?</a></h2>
+<ul>
+<li><strong><a href="./gradient-computation.html">Gradient Computation</a></strong> - Mathematical derivations</li>
+<li><strong><a href="./finite-difference.html">Finite Difference Validation</a></strong> - Testing gradients</li>
+<li><strong><a href="./tensor-operations.html">Tensor Operations</a></strong> - All supported operations</li>
+</ul>
+<hr />
+<p><strong>Ready to dive into the math?</strong> Continue to <a href="./gradient-computation.html">Gradient Computation</a> →</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../autograd/attention.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../autograd/gradient-computation.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../autograd/attention.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../autograd/gradient-computation.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
