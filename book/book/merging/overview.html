@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Early Stopping - Entrenar - Training &amp; Optimization Library</title>
+        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/training/early-stopping.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/merging/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,17 +158,96 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="early-stopping"><a class="header" href="#early-stopping">Early Stopping</a></h1>
+                        <h1 id="model-merging-overview"><a class="header" href="#model-merging-overview">Model Merging Overview</a></h1>
+<p><strong>Model merging</strong> combines multiple fine-tuned models into a single unified model that retains capabilities from all source models.</p>
+<h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
+<p>When you fine-tune multiple models for different tasks, you end up with N separate models:</p>
+<pre><code>Base Model (7B params)
+  ├→ Model A: Fine-tuned on coding tasks
+  ├→ Model B: Fine-tuned on math problems
+  └→ Model C: Fine-tuned on creative writing
+</code></pre>
+<p><strong>Challenge</strong>: How do you create a single model that performs well on all three tasks without:</p>
+<ul>
+<li>Retraining from scratch (expensive)</li>
+<li>Serving N models in parallel (memory/latency overhead)</li>
+<li>Losing task-specific knowledge (catastrophic forgetting)</li>
+</ul>
+<h2 id="the-solution-weight-merging"><a class="header" href="#the-solution-weight-merging">The Solution: Weight Merging</a></h2>
+<p>Entrenar implements three state-of-the-art merging algorithms from Arcee AI:</p>
+<h3 id="ties-task-inference-via-elimination-and-sign-voting"><a class="header" href="#ties-task-inference-via-elimination-and-sign-voting">TIES (Task Inference via Elimination and Sign voting)</a></h3>
+<p><strong>Key Idea</strong>: Resolve parameter conflicts by keeping top-k% changes and using sign voting</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::merge::TIESMerger;
+
+// density=0.5 keeps top 50% of changes
+// lambda=1.0 gives equal weight to all models
+let merger = TIESMerger::new(0.5, 1.0);
+let merged = merger.merge(&amp;models)?;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>From <code>src/merge/ties.rs</code></strong></p>
+<h3 id="dare-drop-and-rescale"><a class="header" href="#dare-drop-and-rescale">DARE (Drop And REscale)</a></h3>
+<p><strong>Key Idea</strong>: Randomly drop parameter updates with Bernoulli masking, then rescale</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::merge::DAREMerger;
+
+// drop_rate=0.9 means keep only 10% of updates
+let merger = DAREMerger::new(0.9);
+let merged = merger.merge(&amp;models)?;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>From <code>src/merge/dare.rs</code></strong></p>
+<h3 id="slerp-spherical-linear-interpolation"><a class="header" href="#slerp-spherical-linear-interpolation">SLERP (Spherical Linear intERPolation)</a></h3>
+<p><strong>Key Idea</strong>: Interpolate on the weight manifold (preserves magnitude)</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::merge::SLERPMerger;
+
+// t=0.5 gives 50-50 interpolation between two models
+let merger = SLERPMerger::new(0.5);
+let merged = merger.merge(&amp;[model_a, model_b])?;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>From <code>src/merge/slerp.rs</code></strong></p>
+<h2 id="when-to-use-each-algorithm"><a class="header" href="#when-to-use-each-algorithm">When to Use Each Algorithm</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Algorithm</th><th>Use Case</th><th>Best For</th></tr></thead><tbody>
+<tr><td><strong>TIES</strong></td><td>Multi-task merging (3+ models)</td><td>Resolving parameter conflicts across many tasks</td></tr>
+<tr><td><strong>DARE</strong></td><td>Sparse fine-tuning merges</td><td>LoRA adapters, small delta updates</td></tr>
+<tr><td><strong>SLERP</strong></td><td>Two-model interpolation</td><td>Smooth transitions, model averaging</td></tr>
+</tbody></table>
+</div>
+<h2 id="implementation-details"><a class="header" href="#implementation-details">Implementation Details</a></h2>
+<p>All merging algorithms in Entrenar are:</p>
+<ul>
+<li>✅ <strong>Tested</strong>: Property-based tests for permutation invariance</li>
+<li>✅ <strong>Validated</strong>: Works with full models and LoRA adapters</li>
+<li>✅ <strong>Type-safe</strong>: Compile-time guarantees via Rust's type system</li>
+</ul>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li><a href="./ties.html">TIES Algorithm</a> - Detailed TIES implementation</li>
+<li><a href="./dare.html">DARE Algorithm</a> - Drop and rescale mechanics</li>
+<li><a href="./slerp.html">SLERP Algorithm</a> - Spherical interpolation</li>
+<li><a href="../examples/merge-models.html">Examples</a> - Real-world merging examples</li>
+</ul>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<p>Based on:</p>
+<ul>
+<li><strong>TIES-Merging</strong> paper (Yadav et al., 2023)</li>
+<li><strong>DARE</strong> paper (Yu et al., 2024)</li>
+<li><strong>SLERP</strong> (classic computer graphics technique)</li>
+<li><strong>Arcee AI</strong> merging research</li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/checkpointing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../quantization/tradeoffs.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../io/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../merging/ties.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -178,11 +257,11 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/checkpointing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../quantization/tradeoffs.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../io/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../merging/ties.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

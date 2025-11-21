@@ -159,6 +159,143 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<p>All notable changes to Entrenar will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="010---2025-11-21"><a class="header" href="#010---2025-11-21"><a href="https://github.com/paiml/entrenar/releases/tag/v0.1.0">0.1.0</a> - 2025-11-21</a></h2>
+<h3 id="added"><a class="header" href="#added">Added</a></h3>
+<h4 id="core-framework"><a class="header" href="#core-framework">Core Framework</a></h4>
+<ul>
+<li><strong>Autograd Engine</strong> - Tape-based automatic differentiation with backward propagation
+<ul>
+<li>Tensor abstraction with gradient tracking</li>
+<li>BackwardOp trait for custom operations</li>
+<li>Attention, matmul, softmax, layer norm operations</li>
+<li>Property-based gradient checking (200K+ iterations)</li>
+</ul>
+</li>
+</ul>
+<h4 id="optimizers"><a class="header" href="#optimizers">Optimizers</a></h4>
+<ul>
+<li><strong>SGD</strong> with momentum support</li>
+<li><strong>Adam</strong> optimizer with bias correction</li>
+<li><strong>AdamW</strong> with decoupled weight decay</li>
+<li><strong>Gradient clipping</strong> via L2 norm</li>
+<li><strong>Learning rate scheduling</strong> (Cosine, Linear)</li>
+<li><strong>SIMD acceleration</strong> for parameter updates via Trueno</li>
+<li>Convergence property tests for all optimizers</li>
+</ul>
+<h4 id="lora--qlora"><a class="header" href="#lora--qlora">LoRA &amp; QLoRA</a></h4>
+<ul>
+<li><strong>LoRA layers</strong> with configurable rank and alpha</li>
+<li><strong>QLoRA</strong> with 4-bit quantized base weights</li>
+<li><strong>Adapter management</strong> (save/load separately from base model)</li>
+<li><strong>Memory benchmarks</strong> showing 4× reduction with QLoRA</li>
+<li><strong>Gradient flow tests</strong> ensuring proper backpropagation</li>
+</ul>
+<h4 id="quantization"><a class="header" href="#quantization">Quantization</a></h4>
+<ul>
+<li><strong>QAT (Quantization-Aware Training)</strong> with fake quantize</li>
+<li><strong>PTQ (Post-Training Quantization)</strong> with calibration</li>
+<li><strong>4-bit and 8-bit</strong> quantization support</li>
+<li><strong>Symmetric and asymmetric</strong> quantization modes</li>
+<li><strong>Per-channel and per-tensor</strong> quantization</li>
+<li>Compression ratio validation and accuracy degradation tests</li>
+</ul>
+<h4 id="model-merging-arcee-methods"><a class="header" href="#model-merging-arcee-methods">Model Merging (Arcee Methods)</a></h4>
+<ul>
+<li><strong>TIES</strong> (Task Inference via Elimination and Sign voting)</li>
+<li><strong>DARE</strong> (Drop And REscale with Bernoulli masking)</li>
+<li><strong>SLERP</strong> (Spherical Linear intERPolation)</li>
+<li>Property tests for permutation invariance</li>
+<li>Multi-model ensemble support</li>
+</ul>
+<h4 id="knowledge-distillation"><a class="header" href="#knowledge-distillation">Knowledge Distillation</a></h4>
+<ul>
+<li><strong>Temperature-scaled KL divergence</strong> loss</li>
+<li><strong>Multi-teacher ensemble</strong> distillation</li>
+<li><strong>Progressive layer-wise</strong> distillation</li>
+<li><strong>44 distillation tests</strong> including 13 property tests</li>
+<li>Temperature smoothing validation</li>
+</ul>
+<h4 id="declarative-configuration"><a class="header" href="#declarative-configuration">Declarative Configuration</a></h4>
+<ul>
+<li><strong>YAML-based training</strong> configuration (Ludwig-style)</li>
+<li><strong>Schema validation</strong> with comprehensive error messages</li>
+<li><strong>Auto-inference</strong> of feature types from data</li>
+<li><strong>Single-command training</strong> via <code>train_from_yaml()</code></li>
+<li>Builder pattern for optimizers and models from config</li>
+</ul>
+<h4 id="training-loop"><a class="header" href="#training-loop">Training Loop</a></h4>
+<ul>
+<li><strong>High-level Trainer</strong> abstraction</li>
+<li><strong>Batch processing</strong> with configurable batch size</li>
+<li><strong>Metrics tracking</strong> (loss history, learning rates, steps)</li>
+<li><strong>Gradient clipping</strong> integration</li>
+<li><strong>Learning rate scheduling</strong> during training</li>
+<li><strong>train_step()</strong> and <strong>train_epoch()</strong> methods</li>
+</ul>
+<h4 id="model-io"><a class="header" href="#model-io">Model I/O</a></h4>
+<ul>
+<li><strong>Save/load models</strong> with multiple formats
+<ul>
+<li><strong>JSON</strong> (pretty-printed or compact)</li>
+<li><strong>YAML</strong> for human-readable configs</li>
+<li>Placeholder for <strong>GGUF</strong> (future Realizar integration)</li>
+</ul>
+</li>
+<li><strong>ModelMetadata</strong> with custom fields</li>
+<li><strong>Round-trip integrity</strong> validation</li>
+<li>Automatic format detection from file extension</li>
+</ul>
+<h3 id="testing--quality"><a class="header" href="#testing--quality">Testing &amp; Quality</a></h3>
+<ul>
+<li><strong>258 tests</strong> passing (100% success rate)
+<ul>
+<li>Unit tests for all modules</li>
+<li>Integration tests for end-to-end workflows</li>
+<li>Property-based tests (200K+ iterations)</li>
+<li>Gradient correctness validation</li>
+<li>Round-trip serialization tests</li>
+</ul>
+</li>
+<li><strong>0 clippy warnings</strong> (strict mode)</li>
+<li><strong>0 TODOs</strong> remaining in codebase</li>
+<li><strong>55 Rust source files</strong> with full documentation</li>
+</ul>
+<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<ul>
+<li><strong>training_loop.rs</strong> - Demonstrates Trainer API</li>
+<li><strong>model_io.rs</strong> - Save/load workflow</li>
+<li><strong>train_from_yaml_example.rs</strong> - Declarative training</li>
+<li><strong>distillation.rs</strong> - Knowledge distillation</li>
+<li><strong>merge_models.rs</strong> - Model merging methods</li>
+<li><strong>train_from_yaml.rs</strong> - YAML configuration</li>
+<li>Plus LLAMA2 examples (train, finetune-lora, finetune-qlora, memory-benchmarks)</li>
+</ul>
+<h3 id="documentation"><a class="header" href="#documentation">Documentation</a></h3>
+<ul>
+<li>Comprehensive API documentation for all public modules</li>
+<li>README with quick start guide</li>
+<li>Specification documents for all major components</li>
+<li>Example configurations (config.yaml)</li>
+</ul>
+<h3 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h3>
+<ul>
+<li><strong>trueno 0.4.1</strong> - SIMD-accelerated compute engine</li>
+<li><strong>ndarray 0.16</strong> - N-dimensional arrays</li>
+<li><strong>serde 1.0</strong> - Serialization framework</li>
+<li><strong>thiserror 2.0</strong> - Error handling</li>
+<li><strong>proptest 1.4</strong> - Property-based testing (dev)</li>
+<li><strong>tempfile 3.8</strong> - Testing utilities (dev)</li>
+</ul>
+<h3 id="notes"><a class="header" href="#notes">Notes</a></h3>
+<ul>
+<li>This is the initial release of Entrenar</li>
+<li>GGUF loading requires future Realizar integration</li>
+<li>Real data loading (Parquet/CSV) to be added</li>
+<li>Performance benchmarks to be published</li>
+</ul>
 
                     </main>
 

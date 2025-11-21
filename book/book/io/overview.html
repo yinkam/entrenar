@@ -1,0 +1,396 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/io/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="model-io-overview"><a class="header" href="#model-io-overview">Model I/O Overview</a></h1>
+<p><strong>Model I/O</strong> provides save/load functionality for neural network models with support for multiple serialization formats.</p>
+<h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
+<p>After training a model, you need to:</p>
+<ul>
+<li><strong>Save model weights</strong> for deployment</li>
+<li><strong>Load trained models</strong> for inference or continued training</li>
+<li><strong>Share models</strong> with collaborators</li>
+<li><strong>Version control</strong> model checkpoints</li>
+<li><strong>Metadata tracking</strong> (hyperparameters, training config, etc.)</li>
+</ul>
+<h2 id="the-solution"><a class="header" href="#the-solution">The Solution</a></h2>
+<p>Entrenar's Model I/O system (from <code>src/io/</code>) provides:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::io::{save_model, load_model, Model, ModelMetadata, SaveConfig, ModelFormat};
+
+// Create model with metadata
+let metadata = ModelMetadata::new("my-model", "transformer")
+    .with_version("0.1.0")
+    .with_custom("learning_rate", 0.001);
+
+let model = Model::new(metadata, parameters);
+
+// Save to JSON
+let config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
+save_model(&amp;model, "model.json", &amp;config)?;
+
+// Load (format auto-detected from extension)
+let loaded = load_model("model.json")?;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="supported-formats"><a class="header" href="#supported-formats">Supported Formats</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Format</th><th>Extension</th><th>Use Case</th><th>Status</th></tr></thead><tbody>
+<tr><td><strong>JSON</strong></td><td><code>.json</code></td><td>Human-readable, debugging</td><td>✅ Implemented</td></tr>
+<tr><td><strong>YAML</strong></td><td><code>.yaml</code>, <code>.yml</code></td><td>Configuration-friendly</td><td>✅ Implemented</td></tr>
+<tr><td><strong>GGUF</strong></td><td><code>.gguf</code></td><td>LLaMA-compatible format</td><td>⚠️ Placeholder (future Realizar integration)</td></tr>
+</tbody></table>
+</div>
+<h3 id="json-format"><a class="header" href="#json-format">JSON Format</a></h3>
+<p><strong>Compact</strong> (single-line):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let config = SaveConfig::new(ModelFormat::Json).with_pretty(false);
+save_model(&amp;model, "model.json", &amp;config)?;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Pretty</strong> (indented):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
+save_model(&amp;model, "model.json", &amp;config)?;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="yaml-format"><a class="header" href="#yaml-format">YAML Format</a></h3>
+<p>Human-friendly for configuration:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let config = SaveConfig::new(ModelFormat::Yaml);
+save_model(&amp;model, "model.yaml", &amp;config)?;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="gguf-format"><a class="header" href="#gguf-format">GGUF Format</a></h3>
+<p><strong>Placeholder</strong> for future integration with Realizar:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Will be supported in v0.2.0+
+let config = SaveConfig::new(ModelFormat::Gguf);
+save_model(&amp;model, "model.gguf", &amp;config)?;  // Currently returns error
+<span class="boring">}</span></code></pre></pre>
+<h2 id="model-structure"><a class="header" href="#model-structure">Model Structure</a></h2>
+<h3 id="model"><a class="header" href="#model">Model</a></h3>
+<p>Contains parameters and metadata:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Model {
+    pub metadata: ModelMetadata,
+    pub parameters: Vec&lt;(String, Tensor)&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="modelmetadata"><a class="header" href="#modelmetadata">ModelMetadata</a></h3>
+<p>Tracks model information:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ModelMetadata {
+    pub name: String,
+    pub architecture: String,
+    pub version: String,
+    pub training_config: Option&lt;HashMap&lt;String, Value&gt;&gt;,
+    pub custom: HashMap&lt;String, Value&gt;,  // Flexible key-value pairs
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let metadata = ModelMetadata::new("llama-7b-lora", "transformer")
+    .with_version("0.1.0")
+    .with_custom("lora_rank", 64)
+    .with_custom("lora_alpha", 128)
+    .with_custom("base_model", "meta-llama/Llama-2-7b");
+<span class="boring">}</span></code></pre></pre>
+<h2 id="round-trip-integrity"><a class="header" href="#round-trip-integrity">Round-Trip Integrity</a></h2>
+<p>All save/load operations maintain <strong>round-trip integrity</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Original model
+let original = create_model();
+
+// Save and load
+save_model(&amp;original, "temp.json", &amp;config)?;
+let loaded = load_model("temp.json")?;
+
+// Verify parameters match
+assert_eq!(original.parameters.len(), loaded.parameters.len());
+for (orig, load) in original.parameters.iter().zip(loaded.parameters.iter()) {
+    assert_eq!(orig.0, load.0);  // Parameter names
+    assert_tensors_equal(&amp;orig.1, &amp;load.1);  // Tensor values
+}
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Validation</strong>: 16 I/O tests ensure round-trip correctness</p>
+<h2 id="auto-format-detection"><a class="header" href="#auto-format-detection">Auto-Format Detection</a></h2>
+<p>Format automatically detected from file extension:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Detects JSON from .json extension
+let model = load_model("model.json")?;
+
+// Detects YAML from .yaml extension
+let model = load_model("config.yaml")?;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="example-workflow"><a class="header" href="#example-workflow">Example Workflow</a></h2>
+<p>From <code>examples/model_io.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust">use entrenar::io::{Model, ModelMetadata, save_model, load_model, SaveConfig, ModelFormat};
+use entrenar::Tensor;
+
+fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    // Create model
+    let params = vec![
+        ("layer1.weight".to_string(), Tensor::from_vec(vec![0.1, 0.2, 0.3, 0.4], true)),
+        ("layer1.bias".to_string(), Tensor::from_vec(vec![0.01, 0.02], true)),
+        ("layer2.weight".to_string(), Tensor::from_vec(vec![0.5, 0.6], true)),
+        ("layer2.bias".to_string(), Tensor::from_vec(vec![0.1], true)),
+    ];
+
+    let metadata = ModelMetadata::new("example-model", "simple-mlp")
+        .with_version("0.1.0")
+        .with_custom("input_dim", 4)
+        .with_custom("hidden_dim", 2)
+        .with_custom("output_dim", 1);
+
+    let model = Model::new(metadata, params);
+
+    // Save as JSON
+    let json_config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
+    save_model(&amp;model, "example_model.json", &amp;json_config)?;
+
+    // Save as YAML
+    let yaml_config = SaveConfig::new(ModelFormat::Yaml);
+    save_model(&amp;model, "example_model.yaml", &amp;yaml_config)?;
+
+    // Load and verify
+    let loaded = load_model("example_model.json")?;
+    println!("✅ Loaded model: {}", loaded.metadata.name);
+
+    Ok(())
+}</code></pre></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li><a href="./save-models.html">Save Models</a> - Detailed save functionality</li>
+<li><a href="./load-models.html">Load Models</a> - Loading and deserialization</li>
+<li><a href="./metadata.html">Model Metadata</a> - Metadata management</li>
+<li><a href="./formats.html">Supported Formats</a> - Format details</li>
+</ul>
+<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
+<p>All Model I/O code is in <code>src/io/</code>:</p>
+<ul>
+<li><code>mod.rs</code> - Public API exports</li>
+<li><code>model.rs</code> - Model and ModelMetadata structs</li>
+<li><code>format.rs</code> - ModelFormat enum and SaveConfig</li>
+<li><code>save.rs</code> - save_model() function</li>
+<li><code>load.rs</code> - load_model() function</li>
+<li><code>tests.rs</code> - 16 integration tests</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../training/early-stopping.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../io/save-models.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../training/early-stopping.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../io/save-models.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

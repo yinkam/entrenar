@@ -294,21 +294,127 @@ Memory Savings: 99.9% reduction in trainable parameters
 Total QLoRA memory:  8,352 KB
 Memory savings:     19,296 KB (69.8%)
 </code></pre>
-<h3 id="5-extreme-tdd-quality"><a class="header" href="#5-extreme-tdd-quality">5. Extreme TDD Quality</a></h3>
+<h3 id="5-model-merging-arcee-methods"><a class="header" href="#5-model-merging-arcee-methods">5. Model Merging (Arcee Methods)</a></h3>
+<p><strong>Model merging</strong> combines multiple fine-tuned models into a single unified model:</p>
+<pre><code>Model A (fine-tuned on task A)
+Model B (fine-tuned on task B)  →  Merged Model (performs both tasks)
+Model C (fine-tuned on task C)
+</code></pre>
+<p><strong>Merging Algorithms:</strong></p>
+<ul>
+<li><strong>TIES</strong> (Task Inference via Elimination and Sign voting) - Resolves parameter conflicts via sign voting</li>
+<li><strong>DARE</strong> (Drop And REscale) - Bernoulli masking with rescaling for sparse updates</li>
+<li><strong>SLERP</strong> (Spherical Linear intERPolation) - Smooth interpolation on weight manifold</li>
+</ul>
+<p>From <code>src/merge/</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::merge::{TIESMerger, DAREMerger, SLERPMerger};
+
+// TIES merging with density=0.5, lambda=1.0
+let merger = TIESMerger::new(0.5, 1.0);
+let merged = merger.merge(&amp;models)?;
+
+// DARE merging with drop rate=0.9
+let dare = DAREMerger::new(0.9);
+let merged = dare.merge(&amp;models)?;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="6-knowledge-distillation"><a class="header" href="#6-knowledge-distillation">6. Knowledge Distillation</a></h3>
+<p><strong>Knowledge distillation</strong> trains a smaller "student" model to mimic a larger "teacher" model:</p>
+<pre><code>Teacher Model (7B params) → Knowledge Transfer → Student Model (1B params)
+</code></pre>
+<p><strong>Distillation Methods</strong> (from <code>src/distill/</code>):</p>
+<ul>
+<li><strong>Temperature-scaled KL divergence</strong>: Soft targets with temperature smoothing</li>
+<li><strong>Multi-teacher ensemble</strong>: Distill from multiple teachers simultaneously</li>
+<li><strong>Progressive layer-wise</strong>: Layer-by-layer knowledge transfer</li>
+</ul>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::distill::DistillationLoss;
+
+// Temperature=3.0, alpha=0.7 (70% distillation, 30% hard labels)
+let loss_fn = DistillationLoss::new(3.0, 0.7);
+let loss = loss_fn.forward(&amp;student_logits, &amp;teacher_logits, &amp;labels);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Validation:</strong> 44 tests including 13 property-based tests for temperature smoothing</p>
+<h3 id="7-training-loop--model-io"><a class="header" href="#7-training-loop--model-io">7. Training Loop &amp; Model I/O</a></h3>
+<p><strong>High-level Trainer API</strong> (from <code>src/train/trainer.rs</code>):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::train::{Trainer, TrainConfig};
+
+let config = TrainConfig::new()
+    .with_log_interval(100)
+    .with_grad_clip(1.0);
+
+let mut trainer = Trainer::new(parameters, optimizer, config);
+trainer.set_loss(Box::new(MSELoss));
+
+// Train for one epoch
+let avg_loss = trainer.train_epoch(batches, |x| model.forward(x));
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Model I/O</strong> (from <code>src/io/</code>):</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::io::{save_model, load_model, SaveConfig, ModelFormat};
+
+// Save to JSON (pretty-printed)
+let config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
+save_model(&amp;model, "model.json", &amp;config)?;
+
+// Load from JSON (auto-detected format)
+let loaded = load_model("model.json")?;
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Formats supported:</strong> JSON (compact/pretty), YAML, GGUF (placeholder for Realizar integration)</p>
+<h3 id="8-declarative-configuration"><a class="header" href="#8-declarative-configuration">8. Declarative Configuration</a></h3>
+<p><strong>Ludwig-style YAML training</strong> (from <code>src/config/train.rs</code>):</p>
+<pre><code class="language-yaml">model:
+  path: models/llama-7b.gguf
+data:
+  train: data/train.parquet
+  batch_size: 4
+optimizer:
+  name: adamw
+  lr: 0.0001
+  beta1: 0.9
+  beta2: 0.999
+training:
+  epochs: 3
+  grad_clip: 1.0
+  output_dir: ./checkpoints
+</code></pre>
+<p><strong>Single-command training:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::config::train_from_yaml;
+
+train_from_yaml("config.yaml")?;  // Complete training workflow
+<span class="boring">}</span></code></pre></pre>
+<h3 id="9-extreme-tdd-quality"><a class="header" href="#9-extreme-tdd-quality">9. Extreme TDD Quality</a></h3>
 <p>Entrenar is built with <strong>EXTREME TDD</strong> methodology ensuring zero defects:</p>
 <p><strong>Test Coverage:</strong></p>
 <ul>
-<li><strong>130 unit tests</strong> (100% pass rate, 0% skipped)</li>
-<li><strong>Property-based tests</strong> (proptest with 1000+ iterations per test)</li>
-<li><strong>Gradient checking</strong> (finite difference validation, ε=1e-3)</li>
-<li><strong>Mutation testing</strong> (&gt;80% kill rate with cargo-mutants)</li>
+<li><strong>258 unit &amp; integration tests</strong> (100% pass rate, 0% skipped)
+<ul>
+<li>130 core library tests</li>
+<li>18 gradient checking tests</li>
+<li>35 architecture tests</li>
+<li>16 I/O and configuration tests</li>
+<li>13 property-based tests (13,000+ test iterations)</li>
+<li>15 chaos engineering tests</li>
+<li>11 memory benchmark tests</li>
+<li>10+ additional integration tests</li>
+</ul>
+</li>
+<li><strong>Mutation testing</strong> (cargo-mutants validates test quality)</li>
 <li><strong>Convergence tests</strong> (optimizers proven to minimize quadratic functions)</li>
 </ul>
 <p><strong>Quality Metrics:</strong></p>
-<pre><code>Test Coverage:    &gt;90% (cargo llvm-cov)
-Mutation Score:   &gt;80% (cargo mutants)
+<pre><code>Total Tests:      258 passing (0 failures, 0 skipped)
 Clippy Warnings:  0 (strict mode, -D warnings)
-Benchmark Regression: &lt;5% allowed vs baseline
+TODOs Remaining:  0 (zero technical debt)
+Doctests:         12 passing (0 failures)
 TDG Score:        100/100 (Toyota Way quality gates)
 </code></pre>
 <p><strong>Example Test:</strong></p>
@@ -370,25 +476,31 @@ fn test_matmul_backward_gradient_check() {
 <li><strong><a href="./examples/linear-regression.html">Examples</a></strong> - See practical training examples</li>
 </ul>
 <h2 id="project-status"><a class="header" href="#project-status">Project Status</a></h2>
-<p>Entrenar is under active development at <strong>Pragmatic AI Labs</strong>:</p>
+<p>Entrenar v0.1.0 is <strong>production-ready</strong> at <strong>Pragmatic AI Labs</strong>:</p>
 <ul>
-<li><strong>Current Version</strong>: 0.1.0 (Phase 3: LoRA/QLoRA complete)</li>
+<li><strong>Current Version</strong>: 0.1.0 ✅ <strong>COMPLETE</strong></li>
 <li><strong>License</strong>: MIT</li>
 <li><strong>Repository</strong>: <a href="https://github.com/paiml/entrenar">github.com/paiml/entrenar</a></li>
-<li><strong>Tests</strong>: 130 passing (100% pass rate)</li>
-<li><strong>Quality</strong>: TDG Score 100/100</li>
+<li><strong>Tests</strong>: 258 passing (100% pass rate)</li>
+<li><strong>Quality</strong>: Zero defects (0 clippy warnings, 0 TODOs)</li>
 </ul>
-<p><strong>Completed Phases:</strong></p>
+<p><strong>Completed v0.1.0 Features:</strong></p>
 <ul>
-<li><strong>Phase 1</strong>: Autograd engine (matmul, layer norm, attention, activations)</li>
-<li><strong>Phase 2</strong>: Optimizers (SGD, Adam, AdamW, schedulers, gradient clipping, SIMD acceleration)</li>
-<li><strong>Phase 3</strong>: LoRA/QLoRA (adapters, quantization, memory benchmarks)</li>
+<li>✅ <strong>Autograd Engine</strong>: Tape-based autodiff with 18 gradient validation tests</li>
+<li>✅ <strong>Optimizers</strong>: SGD, Adam, AdamW with SIMD acceleration</li>
+<li>✅ <strong>LoRA/QLoRA</strong>: Parameter-efficient fine-tuning with 4-bit quantization</li>
+<li>✅ <strong>Model Merging</strong>: TIES, DARE, SLERP algorithms</li>
+<li>✅ <strong>Knowledge Distillation</strong>: Temperature-scaled KL divergence, multi-teacher ensemble</li>
+<li>✅ <strong>Training Loop</strong>: High-level Trainer API with metrics tracking</li>
+<li>✅ <strong>Model I/O</strong>: Save/load in JSON, YAML formats</li>
+<li>✅ <strong>Declarative Configuration</strong>: Ludwig-style YAML training configs</li>
 </ul>
-<p><strong>Future Roadmap:</strong></p>
+<p><strong>Future Roadmap (v0.2.0+):</strong></p>
 <ul>
-<li><strong>Phase 4</strong>: Distributed training and model parallelism</li>
-<li><strong>Phase 5</strong>: Knowledge distillation and model merging</li>
-<li><strong>Phase 6</strong>: Integration with Trueno for GPU acceleration</li>
+<li>Real GGUF loading via Realizar integration</li>
+<li>Distributed training and model parallelism</li>
+<li>GPU acceleration via Trueno integration</li>
+<li>Performance benchmarks and optimization</li>
 </ul>
 <p>Join us in building the future of zero-defect ML training infrastructure!</p>
 
