@@ -3504,6 +3504,317 @@ fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 <li>Best practices and usage guidelines</li>
 </ul>
 <p>Please check back later for complete content.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="command-line-interface"><a class="header" href="#command-line-interface">Command-Line Interface</a></h1>
+<p>Entrenar provides a powerful CLI for training, validation, quantization, and model merging—all without writing code.</p>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<pre><code class="language-bash">cargo install entrenar
+</code></pre>
+<p>Or build from source:</p>
+<pre><code class="language-bash">cargo build --release
+# Binary at target/release/entrenar
+</code></pre>
+<h2 id="quick-reference"><a class="header" href="#quick-reference">Quick Reference</a></h2>
+<pre><code class="language-bash">entrenar train config.yaml              # Train from YAML config
+entrenar validate config.yaml           # Validate config without training
+entrenar info config.yaml               # Display config information
+entrenar quantize model.json -o q4.json # Quantize a model
+entrenar merge a.json b.json -o out.json # Merge models
+</code></pre>
+<h2 id="global-options"><a class="header" href="#global-options">Global Options</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Flag</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-v, --verbose</code></td><td>Enable verbose output</td></tr>
+<tr><td><code>-q, --quiet</code></td><td>Suppress all output except errors</td></tr>
+<tr><td><code>--help</code></td><td>Print help information</td></tr>
+<tr><td><code>--version</code></td><td>Print version</td></tr>
+</tbody></table>
+</div>
+<h2 id="commands"><a class="header" href="#commands">Commands</a></h2>
+<h3 id="train"><a class="header" href="#train">train</a></h3>
+<p>Train a model from a YAML configuration file.</p>
+<pre><code class="language-bash">entrenar train &lt;CONFIG&gt; [OPTIONS]
+</code></pre>
+<p><strong>Arguments:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>CONFIG</code></td><td>Path to YAML configuration file</td></tr>
+</tbody></table>
+</div>
+<p><strong>Options:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-o, --output-dir &lt;DIR&gt;</code></td><td>Override output directory</td></tr>
+<tr><td><code>-r, --resume &lt;PATH&gt;</code></td><td>Resume training from checkpoint</td></tr>
+<tr><td><code>-e, --epochs &lt;N&gt;</code></td><td>Override number of epochs</td></tr>
+<tr><td><code>-b, --batch-size &lt;N&gt;</code></td><td>Override batch size</td></tr>
+<tr><td><code>-l, --lr &lt;RATE&gt;</code></td><td>Override learning rate</td></tr>
+<tr><td><code>--dry-run</code></td><td>Validate config but don't train</td></tr>
+<tr><td><code>--save-every &lt;N&gt;</code></td><td>Save checkpoint every N steps</td></tr>
+<tr><td><code>--log-every &lt;N&gt;</code></td><td>Log metrics every N steps</td></tr>
+<tr><td><code>--seed &lt;N&gt;</code></td><td>Random seed for reproducibility</td></tr>
+</tbody></table>
+</div>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># Basic training
+entrenar train config.yaml
+
+# Override hyperparameters
+entrenar train config.yaml --epochs 50 --lr 0.0001 --batch-size 32
+
+# Resume from checkpoint
+entrenar train config.yaml --resume checkpoints/epoch_10.json
+
+# Dry run to validate config
+entrenar train config.yaml --dry-run
+
+# Full example with all options
+entrenar train config.yaml \
+  --output-dir ./experiments/run1 \
+  --epochs 100 \
+  --batch-size 16 \
+  --lr 1e-4 \
+  --save-every 1000 \
+  --log-every 100 \
+  --seed 42 \
+  --verbose
+</code></pre>
+<h3 id="validate"><a class="header" href="#validate">validate</a></h3>
+<p>Validate a configuration file without training.</p>
+<pre><code class="language-bash">entrenar validate &lt;CONFIG&gt; [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-d, --detailed</code></td><td>Show detailed validation report</td></tr>
+</tbody></table>
+</div>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># Quick validation
+entrenar validate config.yaml
+
+# Detailed report
+entrenar validate config.yaml --detailed
+</code></pre>
+<p><strong>Output:</strong></p>
+<pre><code>✓ Configuration is valid
+  Model: llama-7b
+  Optimizer: adamw (lr=0.0001)
+  Epochs: 10
+  Batch size: 8
+  LoRA: rank=64, alpha=16
+</code></pre>
+<h3 id="info"><a class="header" href="#info">info</a></h3>
+<p>Display information about a configuration.</p>
+<pre><code class="language-bash">entrenar info &lt;CONFIG&gt; [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-f, --format &lt;FORMAT&gt;</code></td><td>Output format: <code>text</code>, <code>json</code>, <code>yaml</code> (default: <code>text</code>)</td></tr>
+</tbody></table>
+</div>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># Human-readable output
+entrenar info config.yaml
+
+# JSON for scripting
+entrenar info config.yaml --format json
+
+# YAML output
+entrenar info config.yaml --format yaml
+</code></pre>
+<h3 id="quantize"><a class="header" href="#quantize">quantize</a></h3>
+<p>Quantize a model to reduce size and memory footprint.</p>
+<pre><code class="language-bash">entrenar quantize &lt;MODEL&gt; -o &lt;OUTPUT&gt; [OPTIONS]
+</code></pre>
+<p><strong>Arguments:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>MODEL</code></td><td>Path to model file</td></tr>
+</tbody></table>
+</div>
+<p><strong>Options:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-o, --output &lt;PATH&gt;</code></td><td>Output path for quantized model (required)</td></tr>
+<tr><td><code>-b, --bits &lt;N&gt;</code></td><td>Quantization bits: <code>4</code> or <code>8</code> (default: <code>4</code>)</td></tr>
+<tr><td><code>-m, --method &lt;METHOD&gt;</code></td><td>Method: <code>symmetric</code>, <code>asymmetric</code> (default: <code>symmetric</code>)</td></tr>
+<tr><td><code>--per-channel</code></td><td>Use per-channel quantization</td></tr>
+<tr><td><code>--calibration-data &lt;PATH&gt;</code></td><td>Path to calibration data for PTQ</td></tr>
+</tbody></table>
+</div>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># 4-bit symmetric quantization (default)
+entrenar quantize model.json -o model_q4.json
+
+# 8-bit asymmetric quantization
+entrenar quantize model.json -o model_q8.json --bits 8 --method asymmetric
+
+# Per-channel with calibration
+entrenar quantize model.json -o model_q4.json \
+  --per-channel \
+  --calibration-data calibration.json
+</code></pre>
+<p><strong>Quantization Methods:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Description</th><th>Use Case</th></tr></thead><tbody>
+<tr><td><code>symmetric</code></td><td>Zero-centered quantization</td><td>General purpose, faster inference</td></tr>
+<tr><td><code>asymmetric</code></td><td>Full range quantization</td><td>Better for non-symmetric weight distributions</td></tr>
+</tbody></table>
+</div>
+<h3 id="merge"><a class="header" href="#merge">merge</a></h3>
+<p>Merge multiple models using various algorithms.</p>
+<pre><code class="language-bash">entrenar merge &lt;MODELS&gt;... -o &lt;OUTPUT&gt; [OPTIONS]
+</code></pre>
+<p><strong>Arguments:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Argument</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>MODELS</code></td><td>Two or more model paths to merge</td></tr>
+</tbody></table>
+</div>
+<p><strong>Options:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-o, --output &lt;PATH&gt;</code></td><td>Output path for merged model (required)</td></tr>
+<tr><td><code>-m, --method &lt;METHOD&gt;</code></td><td>Merge method (default: <code>ties</code>)</td></tr>
+<tr><td><code>-w, --weight &lt;FLOAT&gt;</code></td><td>Interpolation weight for SLERP (0.0-1.0)</td></tr>
+<tr><td><code>-d, --density &lt;FLOAT&gt;</code></td><td>Density threshold for TIES/DARE</td></tr>
+<tr><td><code>--weights &lt;LIST&gt;</code></td><td>Comma-separated weights for weighted average</td></tr>
+</tbody></table>
+</div>
+<p><strong>Merge Methods:</strong></p>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Description</th><th>Parameters</th></tr></thead><tbody>
+<tr><td><code>ties</code></td><td>Trim, Elect Sign, Merge</td><td><code>--density</code> (default: 0.2)</td></tr>
+<tr><td><code>dare</code></td><td>Drop And REscale</td><td><code>--density</code> (default: 0.5)</td></tr>
+<tr><td><code>slerp</code></td><td>Spherical Linear Interpolation</td><td><code>--weight</code> (default: 0.5)</td></tr>
+<tr><td><code>average</code></td><td>Weighted average</td><td><code>--weights</code></td></tr>
+</tbody></table>
+</div>
+<p><strong>Examples:</strong></p>
+<pre><code class="language-bash"># TIES merge (default)
+entrenar merge model_a.json model_b.json -o merged.json
+
+# SLERP with custom weight
+entrenar merge model_a.json model_b.json -o merged.json \
+  --method slerp --weight 0.7
+
+# DARE with density
+entrenar merge model_a.json model_b.json -o merged.json \
+  --method dare --density 0.3
+
+# Weighted average of 3 models
+entrenar merge a.json b.json c.json -o merged.json \
+  --method average --weights "0.5,0.3,0.2"
+</code></pre>
+<h2 id="configuration-file"><a class="header" href="#configuration-file">Configuration File</a></h2>
+<p>The CLI works with YAML configuration files:</p>
+<pre><code class="language-yaml"># config.yaml
+model:
+  path: llama-7b.gguf
+  type: llama
+
+data:
+  train: train.parquet
+  validation: val.parquet
+  batch_size: 8
+
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.01
+
+training:
+  epochs: 10
+  output_dir: ./checkpoints
+  save_interval: 1000
+
+lora:
+  enabled: true
+  rank: 64
+  alpha: 16
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+quantization:
+  enabled: false
+  bits: 4
+</code></pre>
+<p>See <a href="cli/../declarative/yaml-config.html">YAML Configuration</a> for full schema.</p>
+<h2 id="exit-codes"><a class="header" href="#exit-codes">Exit Codes</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>0</code></td><td>Success</td></tr>
+<tr><td><code>1</code></td><td>Configuration error</td></tr>
+<tr><td><code>2</code></td><td>Runtime error</td></tr>
+<tr><td><code>3</code></td><td>I/O error</td></tr>
+</tbody></table>
+</div>
+<h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ENTRENAR_LOG</code></td><td>Log level: <code>error</code>, <code>warn</code>, <code>info</code>, <code>debug</code>, <code>trace</code></td></tr>
+<tr><td><code>ENTRENAR_CONFIG</code></td><td>Default config file path</td></tr>
+<tr><td><code>CUDA_VISIBLE_DEVICES</code></td><td>GPU device selection</td></tr>
+</tbody></table>
+</div>
+<h2 id="shell-completion"><a class="header" href="#shell-completion">Shell Completion</a></h2>
+<p>Generate shell completions:</p>
+<pre><code class="language-bash"># Bash
+entrenar --generate-completion bash &gt; ~/.local/share/bash-completion/completions/entrenar
+
+# Zsh
+entrenar --generate-completion zsh &gt; ~/.zfunc/_entrenar
+
+# Fish
+entrenar --generate-completion fish &gt; ~/.config/fish/completions/entrenar.fish
+</code></pre>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<h3 id="complete-training-workflow-1"><a class="header" href="#complete-training-workflow-1">Complete Training Workflow</a></h3>
+<pre><code class="language-bash"># 1. Validate configuration
+entrenar validate config.yaml --detailed
+
+# 2. Dry run to check setup
+entrenar train config.yaml --dry-run
+
+# 3. Start training
+entrenar train config.yaml --verbose
+
+# 4. Resume if interrupted
+entrenar train config.yaml --resume checkpoints/latest.json
+
+# 5. Quantize final model
+entrenar quantize checkpoints/final.json -o model_q4.json --bits 4
+</code></pre>
+<h3 id="model-merging-pipeline"><a class="header" href="#model-merging-pipeline">Model Merging Pipeline</a></h3>
+<pre><code class="language-bash"># Train specialist models
+entrenar train math_config.yaml
+entrenar train code_config.yaml
+entrenar train writing_config.yaml
+
+# Merge specialists
+entrenar merge \
+  checkpoints/math_final.json \
+  checkpoints/code_final.json \
+  checkpoints/writing_final.json \
+  -o merged_expert.json \
+  --method ties \
+  --density 0.3
+
+# Quantize merged model
+entrenar quantize merged_expert.json -o expert_q4.json
+</code></pre>
+<h2 id="programmatic-usage"><a class="header" href="#programmatic-usage">Programmatic Usage</a></h2>
+<p>The CLI types are also available programmatically:</p>
+<pre><pre class="playground"><code class="language-rust">use entrenar::config::cli::{Cli, Command, TrainArgs};
+use clap::Parser;
+
+fn main() {
+    let cli = Cli::parse();
+
+    match cli.command {
+        Command::Train(args) =&gt; {
+            println!("Training with config: {:?}", args.config);
+        }
+        Command::Validate(args) =&gt; {
+            // ...
+        }
+        _ =&gt; {}
+    }
+}</code></pre></pre>
+<h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
+<ul>
+<li><a href="cli/../declarative/yaml-config.html">YAML Configuration Schema</a></li>
+<li><a href="cli/../best-practices/debugging-training.html">Training Best Practices</a></li>
+<li><a href="cli/../quantization/qlora-overview.html">Quantization Guide</a></li>
+<li><a href="cli/../merging/overview.html">Model Merging</a></li>
+</ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="declarative-training-overview"><a class="header" href="#declarative-training-overview">Declarative Training Overview</a></h1>
 <p><strong>Declarative training</strong> allows you to define complete training workflows in YAML configuration files (Ludwig-style).</p>
 <h2 id="the-problem-3"><a class="header" href="#the-problem-3">The Problem</a></h2>
@@ -3721,7 +4032,7 @@ fn main() {
 <li>Checkpointing during training</li>
 <li>TensorBoard logging</li>
 </ul>
-<h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
+<h2 id="next-steps-6"><a class="header" href="#next-steps-6">Next Steps</a></h2>
 <ul>
 <li><a href="declarative/./yaml-config.html">YAML Configuration</a> - Full schema reference</li>
 <li><a href="declarative/./train-from-yaml.html">train_from_yaml Function</a> - Implementation details</li>
@@ -3936,7 +4247,7 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <li><strong>0 TODOs</strong> remaining in codebase</li>
 <li><strong>55 Rust source files</strong> with full documentation</li>
 </ul>
-<h3 id="examples"><a class="header" href="#examples">Examples</a></h3>
+<h3 id="examples-1"><a class="header" href="#examples-1">Examples</a></h3>
 <ul>
 <li><strong>training_loop.rs</strong> - Demonstrates Trainer API</li>
 <li><strong>model_io.rs</strong> - Save/load workflow</li>
