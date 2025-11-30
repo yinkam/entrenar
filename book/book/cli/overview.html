@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>CLI Overview - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/cli/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,126 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
-
-// Create collector
-let mut collector = MetricsCollector::new();
-
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
-
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
-}
-
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
-<span class="boring">}</span></code></pre></pre>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
-<pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
-</code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
-</tbody></table>
-</div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+                        <h1 id="cli-overview"><a class="header" href="#cli-overview">CLI Overview</a></h1>
+<p>Entrenar provides two command-line tools for training, research, and benchmarking:</p>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li><strong><code>entrenar</code></strong> - Main CLI for training, model operations, and research workflows</li>
+<li><strong><code>entrenar-bench</code></strong> - Specialized tool for distillation benchmarking and cost analysis</li>
+</ul>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<p>Both tools are installed when you add entrenar to your project:</p>
+<pre><code class="language-bash">cargo install entrenar
+</code></pre>
+<h2 id="main-cli-commands"><a class="header" href="#main-cli-commands">Main CLI Commands</a></h2>
+<pre><code class="language-bash">entrenar &lt;COMMAND&gt; [OPTIONS]
+
+Commands:
+  train      Train a model from YAML configuration
+  validate   Validate a configuration file without training
+  info       Display information about a configuration
+  quantize   Quantize a model
+  merge      Merge multiple models
+  research   Academic research artifacts and workflows
+</code></pre>
+<h3 id="global-options"><a class="header" href="#global-options">Global Options</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>-v, --verbose</code></td><td>Enable verbose output</td></tr>
+<tr><td><code>-q, --quiet</code></td><td>Suppress all output except errors</td></tr>
+<tr><td><code>--version</code></td><td>Show version information</td></tr>
+<tr><td><code>--help</code></td><td>Show help</td></tr>
+</tbody></table>
+</div>
+<h2 id="quick-examples"><a class="header" href="#quick-examples">Quick Examples</a></h2>
+<h3 id="training"><a class="header" href="#training">Training</a></h3>
+<pre><code class="language-bash"># Train from YAML config
+entrenar train config.yaml
+
+# Train with overrides
+entrenar train config.yaml --epochs 10 --lr 0.001
+
+# Dry run (validate only)
+entrenar train config.yaml --dry-run
+</code></pre>
+<h3 id="model-operations"><a class="header" href="#model-operations">Model Operations</a></h3>
+<pre><code class="language-bash"># Quantize a model
+entrenar quantize model.safetensors --output model_q4.json --bits 4
+
+# Merge models with TIES
+entrenar merge model1.safetensors model2.safetensors --output merged.safetensors --method ties
+
+# Merge with SLERP
+entrenar merge model1.safetensors model2.safetensors --output merged.safetensors --method slerp --weight 0.7
+</code></pre>
+<h3 id="research-workflows"><a class="header" href="#research-workflows">Research Workflows</a></h3>
+<pre><code class="language-bash"># Initialize a research artifact
+entrenar research init --id my-dataset --title "My Dataset" --author "Alice Smith"
+
+# Generate citation
+entrenar research cite artifact.yaml --year 2024 --format bibtex
+
+# Create RO-Crate package
+entrenar research bundle artifact.yaml --output ./package --zip
+</code></pre>
+<h2 id="benchmark-cli-commands"><a class="header" href="#benchmark-cli-commands">Benchmark CLI Commands</a></h2>
+<pre><code class="language-bash">entrenar-bench &lt;COMMAND&gt; [OPTIONS]
+
+Commands:
+  temperature       Sweep temperature hyperparameter
+  alpha             Sweep alpha hyperparameter
+  compare           Compare distillation strategies
+  ablation          Run ablation study
+  cost-performance  Analyze cost vs performance trade-offs
+  recommend         Recommend configurations based on constraints
+</code></pre>
+<h3 id="quick-examples-1"><a class="header" href="#quick-examples-1">Quick Examples</a></h3>
+<pre><code class="language-bash"># Temperature sweep
+entrenar-bench temperature --start 1.0 --end 8.0 --step 0.5
+
+# Compare strategies
+entrenar-bench compare --strategies kd,progressive,attention
+
+# Cost-performance analysis
+entrenar-bench cost-performance --gpu a100-80gb
+
+# Get recommendations
+entrenar-bench recommend --max-cost 50 --min-accuracy 0.85
+</code></pre>
+<h2 id="output-formats"><a class="header" href="#output-formats">Output Formats</a></h2>
+<p>Both CLIs support multiple output formats:</p>
+<div class="table-wrapper"><table><thead><tr><th>Format</th><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td>Text</td><td><code>--format text</code></td><td>Human-readable tables (default)</td></tr>
+<tr><td>JSON</td><td><code>--format json</code></td><td>Machine-readable JSON</td></tr>
+<tr><td>YAML</td><td><code>--format yaml</code></td><td>YAML format (main CLI only)</td></tr>
+</tbody></table>
+</div>
+<h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Variable</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>ZENODO_TOKEN</code></td><td>API token for Zenodo deposits</td></tr>
+<tr><td><code>FIGSHARE_TOKEN</code></td><td>API token for Figshare deposits</td></tr>
+</tbody></table>
+</div>
+<h2 id="exit-codes"><a class="header" href="#exit-codes">Exit Codes</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>0</td><td>Success</td></tr>
+<tr><td>1</td><td>Error (see stderr for details)</td></tr>
+</tbody></table>
+</div>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./research.html">Research Commands</a> - Academic research CLI reference</li>
+<li><a href="./benchmark.html">Benchmark Commands</a> - Benchmarking CLI reference</li>
+<li><a href="../declarative/overview.html">Declarative Training</a> - YAML configuration</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../io/gguf-format.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../cli/research.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +287,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../io/gguf-format.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../cli/research.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>Ruchy Session Bridge - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/ecosystem/ruchy.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,233 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+                        <h1 id="ruchy-session-bridge"><a class="header" href="#ruchy-session-bridge">Ruchy Session Bridge</a></h1>
+<p>The Ruchy session bridge preserves training history from interactive Ruchy sessions, converting them to Entrenar artifacts for reproducibility and archival.</p>
+<h2 id="feature-flag"><a class="header" href="#feature-flag">Feature Flag</a></h2>
+<p>Enable the session bridge:</p>
+<pre><code class="language-toml">[dependencies]
+entrenar = { version = "0.2", features = ["ruchy-sessions"] }
+</code></pre>
+<h2 id="entrenarsession"><a class="header" href="#entrenarsession">EntrenarSession</a></h2>
+<p>Represents a training session with metrics and code history:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
+</span>use entrenar::ecosystem::EntrenarSession;
 
-// Create collector
-let mut collector = MetricsCollector::new();
+let session = EntrenarSession::new("sess-001", "LoRA Fine-tuning")
+    .with_user("alice")
+    .with_architecture("llama-7b")
+    .with_dataset("custom-dataset")
+    .with_config("batch_size", "32")
+    .with_config("learning_rate", "1e-4")
+    .with_tag("fine-tuning")
+    .with_tag("lora")
+    .with_notes("Initial experiment with rank 64");
+<span class="boring">}</span></code></pre></pre>
+<h2 id="sessionmetrics"><a class="header" href="#sessionmetrics">SessionMetrics</a></h2>
+<p>Track training metrics over time:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut session = EntrenarSession::new("sess-001", "Training");
 
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
+// Log metrics
+session.metrics.add_loss(0.5);
+session.metrics.add_loss(0.3);
+session.metrics.add_loss(0.2);
 
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
+session.metrics.add_accuracy(75.0);
+session.metrics.add_accuracy(85.0);
+
+session.metrics.add_lr(0.001);
+session.metrics.add_grad_norm(1.5);
+
+// Custom metrics
+session.metrics.add_custom("f1_score", 0.82);
+session.metrics.add_custom("bleu", 0.45);
+
+// Statistics
+println!("Steps: {}", session.metrics.total_steps());
+println!("Final loss: {:?}", session.metrics.final_loss());
+println!("Best loss: {:?}", session.metrics.best_loss());
+println!("Final accuracy: {:?}", session.metrics.final_accuracy());
+println!("Best accuracy: {:?}", session.metrics.best_accuracy());
+<span class="boring">}</span></code></pre></pre>
+<h2 id="code-history"><a class="header" href="#code-history">Code History</a></h2>
+<p>Capture executed code cells:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::CodeCell;
+
+let cell = CodeCell {
+    execution_order: 1,
+    source: r#"
+model = load_model("llama-7b")
+trainer = Trainer(model, lr=1e-4)
+trainer.train(epochs=10)
+    "#.to_string(),
+    output: Some("Training completed. Final loss: 0.2".to_string()),
+    timestamp: chrono::Utc::now(),
+    duration_ms: Some(45000),
+};
+
+session.add_code_cell(cell);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="session-lifecycle"><a class="header" href="#session-lifecycle">Session Lifecycle</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Create and track session
+let mut session = EntrenarSession::new("sess-001", "Training")
+    .with_user("bob");
+
+// Log during training
+for epoch in 0..10 {
+    let loss = train_epoch();
+    session.metrics.add_loss(loss);
 }
 
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
+// Check if session has training data
+if session.has_training_data() {
+    println!("Recorded {} steps", session.metrics.total_steps());
+}
+
+// Mark session as ended
+session.end();
+
+// Get duration
+if let Some(duration) = session.duration() {
+    println!("Session lasted {} hours", duration.num_hours());
+}
 <span class="boring">}</span></code></pre></pre>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
-<pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
-</code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
-</tbody></table>
-</div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h2 id="converting-from-ruchy"><a class="header" href="#converting-from-ruchy">Converting from Ruchy</a></h2>
+<p>Convert a Ruchy session to EntrenarSession:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::{EntrenarSession, RuchySession};
+
+// RuchySession comes from the Ruchy crate
+let ruchy_session: RuchySession = /* ... */;
+
+// Convert to EntrenarSession
+let session: EntrenarSession = ruchy_session.into();
+
+println!("Session: {}", session.name);
+println!("User: {:?}", session.user);
+println!("Steps: {}", session.metrics.total_steps());
+<span class="boring">}</span></code></pre></pre>
+<h2 id="converting-to-research-artifact"><a class="header" href="#converting-to-research-artifact">Converting to Research Artifact</a></h2>
+<p>Preserve session as a research artifact:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::session_to_artifact;
+
+let mut session = EntrenarSession::new("sess-001", "LoRA Experiment")
+    .with_user("alice")
+    .with_architecture("llama-7b")
+    .with_tag("lora")
+    .with_tag("fine-tuning");
+
+session.metrics.add_loss(0.5);
+session.metrics.add_loss(0.2);
+
+// Convert to artifact
+let artifact = session_to_artifact(&amp;session)?;
+
+println!("Artifact ID: {}", artifact.id);
+println!("Type: {}", artifact.artifact_type);  // Notebook
+println!("Authors: {:?}", artifact.authors);
+println!("Keywords: {:?}", artifact.keywords);
+println!("Version: {}", artifact.version);  // "1.0.0+steps2"
+<span class="boring">}</span></code></pre></pre>
+<h3 id="artifact-properties"><a class="header" href="#artifact-properties">Artifact Properties</a></h3>
+<p>The conversion:</p>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li>Sets artifact type to <code>Notebook</code></li>
+<li>Adds user as author with <code>Software</code> and <code>Investigation</code> roles</li>
+<li>Generates description from session metrics</li>
+<li>Copies tags as keywords (or defaults to ["training", "experiment", "entrenar"])</li>
+<li>Sets version with step count suffix</li>
+</ul>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::RuchyBridgeError;
+
+let session = EntrenarSession::new("empty", "Empty Session");
+
+match session_to_artifact(&amp;session) {
+    Ok(artifact) =&gt; println!("Created: {}", artifact.id),
+    Err(RuchyBridgeError::NoTrainingHistory) =&gt; {
+        eprintln!("Session has no training data or code");
+    }
+    Err(e) =&gt; eprintln!("Conversion failed: {}", e),
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="full-workflow-example"><a class="header" href="#full-workflow-example">Full Workflow Example</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::{EntrenarSession, CodeCell, session_to_artifact};
+use entrenar::research::{CitationMetadata, ArchiveDeposit, ZenodoConfig};
+
+// 1. Create session
+let mut session = EntrenarSession::new("exp-2024-001", "Temperature Ablation Study")
+    .with_user("researcher@university.edu")
+    .with_architecture("llama-2-7b")
+    .with_dataset("alpaca-clean")
+    .with_config("temperature", "4.0")
+    .with_config("alpha", "0.7")
+    .with_tag("distillation")
+    .with_tag("ablation");
+
+// 2. Log training progress
+for epoch in 0..50 {
+    let loss = train_epoch();
+    session.metrics.add_loss(loss);
+
+    if epoch % 10 == 0 {
+        let accuracy = evaluate();
+        session.metrics.add_accuracy(accuracy);
+    }
+}
+
+// 3. Capture final code
+session.add_code_cell(CodeCell {
+    execution_order: 1,
+    source: "# Training code...".to_string(),
+    output: Some("Training complete".to_string()),
+    timestamp: chrono::Utc::now(),
+    duration_ms: Some(3600000),
+});
+
+// 4. End session
+session.end();
+
+// 5. Convert to artifact
+let artifact = session_to_artifact(&amp;session)?;
+
+// 6. Generate citation
+let citation = CitationMetadata::from_artifact(&amp;artifact, 2024);
+println!("{}", citation.to_bibtex());
+
+// 7. Optionally deposit to archive
+// let deposit = ArchiveDeposit::new(ZenodoConfig::new("your-token"));
+// deposit.prepare(&amp;artifact)?;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./overview.html">Ecosystem Overview</a></li>
+<li><a href="../research/overview.html">Research Artifacts</a></li>
+<li><a href="../research/overview.html">Academic Research</a></li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ecosystem/realizar.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../io/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +394,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ecosystem/realizar.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../io/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

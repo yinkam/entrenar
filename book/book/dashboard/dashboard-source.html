@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>DashboardSource Trait - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/dashboard/dashboard-source.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,202 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+                        <h1 id="dashboardsource-trait"><a class="header" href="#dashboardsource-trait">DashboardSource Trait</a></h1>
+<p>The <code>DashboardSource</code> trait provides a unified interface for accessing training run data from dashboards.</p>
+<h2 id="trait-definition"><a class="header" href="#trait-definition">Trait Definition</a></h2>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
+</span>pub trait DashboardSource {
+    /// Get the current run status.
+    fn status(&amp;self) -&gt; RunStatus;
 
-// Create collector
-let mut collector = MetricsCollector::new();
+    /// Get recent metrics, limited to `limit` points per metric.
+    fn recent_metrics(&amp;self, limit: usize) -&gt; HashMap&lt;String, MetricSnapshot&gt;;
 
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
+    /// Subscribe to metric updates.
+    fn subscribe(&amp;self, callback: SubscriptionCallback);
 
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
+    /// Get current resource usage.
+    fn resource_usage(&amp;self) -&gt; ResourceSnapshot;
 }
-
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
 <span class="boring">}</span></code></pre></pre>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
-<pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
-</code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
+<h2 id="metricsnapshot"><a class="header" href="#metricsnapshot">MetricSnapshot</a></h2>
+<p>A snapshot of metric values for dashboard display:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct MetricSnapshot {
+    /// Metric key (e.g., "loss", "accuracy")
+    pub key: String,
+    /// Time-value pairs: (timestamp_ms, value)
+    pub values: Vec&lt;(u64, f64)&gt;,
+    /// Current trend direction
+    pub trend: Trend,
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="methods"><a class="header" href="#methods">Methods</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>latest()</code></td><td><code>Option&lt;f64&gt;</code></td><td>Get the most recent value</td></tr>
+<tr><td><code>min()</code></td><td><code>Option&lt;f64&gt;</code></td><td>Get the minimum value</td></tr>
+<tr><td><code>max()</code></td><td><code>Option&lt;f64&gt;</code></td><td>Get the maximum value</td></tr>
+<tr><td><code>mean()</code></td><td><code>Option&lt;f64&gt;</code></td><td>Get the average value</td></tr>
+<tr><td><code>len()</code></td><td><code>usize</code></td><td>Number of data points</td></tr>
+<tr><td><code>is_empty()</code></td><td><code>bool</code></td><td>Check if empty</td></tr>
 </tbody></table>
 </div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h3 id="example"><a class="header" href="#example">Example</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let metrics = run.recent_metrics(100);
+
+if let Some(loss) = metrics.get("loss") {
+    println!("Loss statistics:");
+    println!("  Latest: {:.4}", loss.latest().unwrap_or(0.0));
+    println!("  Min: {:.4}", loss.min().unwrap_or(0.0));
+    println!("  Max: {:.4}", loss.max().unwrap_or(0.0));
+    println!("  Mean: {:.4}", loss.mean().unwrap_or(0.0));
+    println!("  Trend: {} {}", loss.trend, loss.trend.emoji());
+    println!("  Points: {}", loss.len());
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="trend-enum"><a class="header" href="#trend-enum">Trend Enum</a></h2>
+<p>Represents the direction of a metric over time:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Trend {
+    Rising,   // Metric is increasing
+    Falling,  // Metric is decreasing
+    Stable,   // Metric is relatively stable
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="trend-detection"><a class="header" href="#trend-detection">Trend Detection</a></h3>
+<p>Trends are computed using linear regression on the metric values:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Trend {
+    pub fn from_values(values: &amp;[f64]) -&gt; Self {
+        // Computes slope via linear regression
+        // Normalizes by mean for relative change
+        // Threshold: 5% relative change
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="display"><a class="header" href="#display">Display</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let trend = Trend::Rising;
+println!("{}", trend);         // "rising"
+println!("{}", trend.emoji()); // "↑"
+<span class="boring">}</span></code></pre></pre>
+<div class="table-wrapper"><table><thead><tr><th>Trend</th><th>Display</th><th>Emoji</th></tr></thead><tbody>
+<tr><td>Rising</td><td>"rising"</td><td>↑</td></tr>
+<tr><td>Falling</td><td>"falling"</td><td>↓</td></tr>
+<tr><td>Stable</td><td>"stable"</td><td>→</td></tr>
+</tbody></table>
+</div>
+<h2 id="resourcesnapshot"><a class="header" href="#resourcesnapshot">ResourceSnapshot</a></h2>
+<p>System resource utilization snapshot:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct ResourceSnapshot {
+    pub gpu_util: f64,           // GPU utilization (0.0-1.0)
+    pub cpu_util: f64,           // CPU utilization (0.0-1.0)
+    pub memory_used: u64,        // Memory used (bytes)
+    pub memory_total: u64,       // Total memory (bytes)
+    pub gpu_memory_used: Option&lt;u64&gt;,   // GPU memory used
+    pub gpu_memory_total: Option&lt;u64&gt;,  // Total GPU memory
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="builder-pattern"><a class="header" href="#builder-pattern">Builder Pattern</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let resources = ResourceSnapshot::new()
+    .with_gpu_util(0.75)
+    .with_cpu_util(0.50)
+    .with_memory(4_000_000_000, 8_000_000_000)
+    .with_gpu_memory(6_000_000_000, 16_000_000_000);
+
+println!("Memory utilization: {:.1}%", resources.memory_util() * 100.0);
+println!("GPU memory: {:.1}%", resources.gpu_memory_util().unwrap() * 100.0);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="implementation-for-run"><a class="header" href="#implementation-for-run">Implementation for Run</a></h2>
+<p>The <code>Run</code> struct implements <code>DashboardSource</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;S: ExperimentStorage&gt; DashboardSource for Run&lt;S&gt; {
+    fn status(&amp;self) -&gt; RunStatus {
+        if self.is_finished() {
+            // Query storage for actual status
+        } else {
+            RunStatus::Running
+        }
+    }
+
+    fn recent_metrics(&amp;self, limit: usize) -&gt; HashMap&lt;String, MetricSnapshot&gt; {
+        // Fetches metrics from storage
+        // Limits to most recent `limit` points
+        // Computes trends automatically
+    }
+
+    fn subscribe(&amp;self, callback: SubscriptionCallback) {
+        // Placeholder for real-time subscriptions
+    }
+
+    fn resource_usage(&amp;self) -&gt; ResourceSnapshot {
+        // Returns current system metrics
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="custom-implementations"><a class="header" href="#custom-implementations">Custom Implementations</a></h2>
+<p>You can implement <code>DashboardSource</code> for custom types:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct MyTrainingMonitor {
+    metrics: HashMap&lt;String, Vec&lt;f64&gt;&gt;,
+}
+
+impl DashboardSource for MyTrainingMonitor {
+    fn status(&amp;self) -&gt; RunStatus {
+        RunStatus::Running
+    }
+
+    fn recent_metrics(&amp;self, limit: usize) -&gt; HashMap&lt;String, MetricSnapshot&gt; {
+        self.metrics.iter()
+            .map(|(key, values)| {
+                let recent: Vec&lt;(u64, f64)&gt; = values.iter()
+                    .rev()
+                    .take(limit)
+                    .enumerate()
+                    .map(|(i, &amp;v)| (i as u64, v))
+                    .collect();
+                (key.clone(), MetricSnapshot::new(key, recent))
+            })
+            .collect()
+    }
+
+    fn subscribe(&amp;self, _callback: SubscriptionCallback) {
+        // Implement subscription logic
+    }
+
+    fn resource_usage(&amp;self) -&gt; ResourceSnapshot {
+        ResourceSnapshot::new()
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li><a href="./overview.html">Dashboard Overview</a></li>
+<li><a href="./wasm.html">WASM Bindings</a></li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../dashboard/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../dashboard/wasm.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +363,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../dashboard/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../dashboard/wasm.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

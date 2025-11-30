@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>Realizar GGUF Export - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/io/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/ecosystem/realizar.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,212 +158,207 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="model-io-overview"><a class="header" href="#model-io-overview">Model I/O Overview</a></h1>
-<p><strong>Model I/O</strong> provides save/load functionality for neural network models with support for multiple serialization formats.</p>
-<h2 id="the-problem"><a class="header" href="#the-problem">The Problem</a></h2>
-<p>After training a model, you need to:</p>
-<ul>
-<li><strong>Save model weights</strong> for deployment</li>
-<li><strong>Load trained models</strong> for inference or continued training</li>
-<li><strong>Share models</strong> with collaborators</li>
-<li><strong>Version control</strong> model checkpoints</li>
-<li><strong>Metadata tracking</strong> (hyperparameters, training config, etc.)</li>
-</ul>
-<h2 id="the-solution"><a class="header" href="#the-solution">The Solution</a></h2>
-<p>Entrenar's Model I/O system (from <code>src/io/</code>) provides:</p>
+                        <h1 id="realizar-gguf-export"><a class="header" href="#realizar-gguf-export">Realizar GGUF Export</a></h1>
+<p>The ecosystem module provides GGUF export functionality for model quantization and distribution via integration with Realizar.</p>
+<h2 id="quantization-types"><a class="header" href="#quantization-types">Quantization Types</a></h2>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::io::{save_model, load_model, Model, ModelMetadata, SaveConfig, ModelFormat};
+</span>use entrenar::ecosystem::QuantizationType;
 
-// Create model with metadata
-let metadata = ModelMetadata::new("my-model", "transformer")
-    .with_version("0.1.0")
-    .with_custom("learning_rate", 0.001);
-
-let model = Model::new(metadata, parameters);
-
-// Save to JSON
-let config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
-save_model(&amp;model, "model.json", &amp;config)?;
-
-// Load (format auto-detected from extension)
-let loaded = load_model("model.json")?;
+// Available quantization types
+let types = [
+    QuantizationType::Q2K,   // 2.5 bits, extreme compression
+    QuantizationType::Q3KM,  // 3.5 bits, aggressive compression
+    QuantizationType::Q4KM,  // 4.5 bits, recommended balance
+    QuantizationType::Q5KM,  // 5.5 bits, higher quality
+    QuantizationType::Q6K,   // 6.5 bits, high quality
+    QuantizationType::Q80,   // 8 bits, highest quantized quality
+    QuantizationType::F16,   // 16 bits, no quantization
+    QuantizationType::F32,   // 32 bits, full precision
+];
 <span class="boring">}</span></code></pre></pre>
-<h2 id="supported-formats"><a class="header" href="#supported-formats">Supported Formats</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Format</th><th>Extension</th><th>Use Case</th><th>Status</th></tr></thead><tbody>
-<tr><td><strong>SafeTensors</strong></td><td><code>.safetensors</code></td><td>Production, HuggingFace Hub</td><td>✅ Recommended</td></tr>
-<tr><td><strong>JSON</strong></td><td><code>.json</code></td><td>Human-readable, debugging</td><td>✅ Implemented</td></tr>
-<tr><td><strong>YAML</strong></td><td><code>.yaml</code>, <code>.yml</code></td><td>Configuration-friendly</td><td>✅ Implemented</td></tr>
-<tr><td><strong>GGUF</strong></td><td><code>.gguf</code></td><td>LLaMA-compatible format</td><td>⚠️ Placeholder (future Realizar integration)</td></tr>
+<h3 id="quantization-properties"><a class="header" href="#quantization-properties">Quantization Properties</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Bits/Weight</th><th>Quality Score</th><th>Size Ratio</th></tr></thead><tbody>
+<tr><td>Q2_K</td><td>2.5</td><td>50</td><td>0.078x</td></tr>
+<tr><td>Q3_K_M</td><td>3.5</td><td>65</td><td>0.109x</td></tr>
+<tr><td>Q4_K_M</td><td>4.5</td><td>78</td><td>0.141x</td></tr>
+<tr><td>Q5_K_M</td><td>5.5</td><td>85</td><td>0.172x</td></tr>
+<tr><td>Q6_K</td><td>6.5</td><td>92</td><td>0.203x</td></tr>
+<tr><td>Q8_0</td><td>8.0</td><td>97</td><td>0.250x</td></tr>
+<tr><td>F16</td><td>16.0</td><td>100</td><td>0.500x</td></tr>
+<tr><td>F32</td><td>32.0</td><td>100</td><td>1.000x</td></tr>
 </tbody></table>
 </div>
-<h3 id="safetensors-format-recommended"><a class="header" href="#safetensors-format-recommended">SafeTensors Format (Recommended)</a></h3>
-<p>The recommended format for production use. Provides security (no arbitrary code
-execution), efficiency (zero-copy loading), and HuggingFace Hub compatibility:</p>
+<h3 id="type-methods"><a class="header" href="#type-methods">Type Methods</a></h3>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>// Save as SafeTensors
-let config = SaveConfig::new(ModelFormat::SafeTensors);
-save_model(&amp;model, "model.safetensors", &amp;config)?;
+</span>let quant = QuantizationType::Q4KM;
 
-// Load (format auto-detected)
-let model = load_model("model.safetensors")?;
+println!("Type: {}", quant.as_str());           // "Q4_K_M"
+println!("Bits: {}", quant.bits_per_weight());  // 4.5
+println!("Quality: {}", quant.quality_score()); // 78
+
+// Estimate output size
+let original_size = 14_000_000_000u64; // 14GB model
+let estimated = quant.estimate_size(original_size);
+println!("Estimated size: {:.2} GB", estimated as f64 / 1e9);
 <span class="boring">}</span></code></pre></pre>
-<h3 id="json-format"><a class="header" href="#json-format">JSON Format</a></h3>
-<p><strong>Compact</strong> (single-line):</p>
+<h3 id="parsing"><a class="header" href="#parsing">Parsing</a></h3>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let config = SaveConfig::new(ModelFormat::Json).with_pretty(false);
-save_model(&amp;model, "model.json", &amp;config)?;
+</span>// Parse from string (case-insensitive)
+assert_eq!(QuantizationType::parse("Q4_K_M"), Some(QuantizationType::Q4KM));
+assert_eq!(QuantizationType::parse("q4km"), Some(QuantizationType::Q4KM));
+assert_eq!(QuantizationType::parse("F16"), Some(QuantizationType::F16));
+assert_eq!(QuantizationType::parse("fp16"), Some(QuantizationType::F16));
 <span class="boring">}</span></code></pre></pre>
-<p><strong>Pretty</strong> (indented):</p>
+<h2 id="ggufexporter"><a class="header" href="#ggufexporter">GgufExporter</a></h2>
+<p>The main export interface:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
-save_model(&amp;model, "model.json", &amp;config)?;
+</span>use entrenar::ecosystem::{GgufExporter, QuantizationType};
+
+let exporter = GgufExporter::new(QuantizationType::Q4KM)
+    .with_threads(8)
+    .without_validation();
 <span class="boring">}</span></code></pre></pre>
-<h3 id="yaml-format"><a class="header" href="#yaml-format">YAML Format</a></h3>
-<p>Human-friendly for configuration:</p>
+<h3 id="adding-metadata"><a class="header" href="#adding-metadata">Adding Metadata</a></h3>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let config = SaveConfig::new(ModelFormat::Yaml);
-save_model(&amp;model, "model.yaml", &amp;config)?;
+</span>use entrenar::ecosystem::{GgufExporter, GeneralMetadata, ExperimentProvenance};
+
+let exporter = GgufExporter::new(QuantizationType::Q5KM)
+    .with_general(GeneralMetadata::new("llama", "my-finetuned-model")
+        .with_author("PAIML")
+        .with_description("LoRA fine-tuned LLaMA model")
+        .with_license("MIT"))
+    .with_provenance(ExperimentProvenance::new("exp-001", "run-123")
+        .with_config_hash("abc123def456")
+        .with_dataset("custom-dataset")
+        .with_base_model("llama-2-7b")
+        .with_metric("loss", 0.125)
+        .with_metric("accuracy", 0.92)
+        .with_git_commit("deadbeef")
+        .with_custom("framework", "entrenar"));
 <span class="boring">}</span></code></pre></pre>
-<h3 id="gguf-format"><a class="header" href="#gguf-format">GGUF Format</a></h3>
-<p><strong>Placeholder</strong> for future integration with Realizar:</p>
+<h2 id="experiment-provenance"><a class="header" href="#experiment-provenance">Experiment Provenance</a></h2>
+<p>Track model lineage and training metadata:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>// Will be supported in v0.2.0+
-let config = SaveConfig::new(ModelFormat::Gguf);
-save_model(&amp;model, "model.gguf", &amp;config)?;  // Currently returns error
+</span>use entrenar::ecosystem::ExperimentProvenance;
+
+let provenance = ExperimentProvenance::new("experiment-id", "run-id")
+    .with_config_hash("sha256-of-config")
+    .with_dataset("imagenet-1k")
+    .with_base_model("llama-7b")
+    .with_metric("final_loss", 0.123)
+    .with_metric("perplexity", 4.56)
+    .with_git_commit("abc123")
+    .with_custom("trainer", "entrenar")
+    .with_custom("epochs", "10");
+
+// Convert to GGUF metadata pairs
+let pairs = provenance.to_metadata_pairs();
+for (key, value) in &amp;pairs {
+    println!("{}: {}", key, value);
+}
+// entrenar.experiment_id: experiment-id
+// entrenar.run_id: run-id
+// entrenar.timestamp: 2024-01-15T10:30:00Z
+// entrenar.metric.final_loss: 0.123
+// entrenar.custom.trainer: entrenar
 <span class="boring">}</span></code></pre></pre>
-<h2 id="model-structure"><a class="header" href="#model-structure">Model Structure</a></h2>
-<h3 id="model"><a class="header" href="#model">Model</a></h3>
-<p>Contains parameters and metadata:</p>
+<h2 id="general-metadata"><a class="header" href="#general-metadata">General Metadata</a></h2>
+<p>Standard GGUF metadata fields:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub struct Model {
-    pub metadata: ModelMetadata,
-    pub parameters: Vec&lt;(String, Tensor)&gt;,
+</span>use entrenar::ecosystem::GeneralMetadata;
+
+let general = GeneralMetadata::new("mistral", "my-model")
+    .with_author("Your Name")
+    .with_description("Fine-tuned Mistral model for code generation")
+    .with_license("Apache-2.0");
+<span class="boring">}</span></code></pre></pre>
+<h2 id="exporting-models"><a class="header" href="#exporting-models">Exporting Models</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let exporter = GgufExporter::new(QuantizationType::Q4KM)
+    .with_general(general)
+    .with_provenance(provenance);
+
+// Export model
+let result = exporter.export("input_model.safetensors", "output_model.gguf")?;
+
+println!("Output: {:?}", result.output_path);
+println!("Quantization: {}", result.quantization);
+println!("Metadata keys: {}", result.metadata_keys);
+println!("Estimated size: {} bytes", result.estimated_size_bytes);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="collecting-metadata"><a class="header" href="#collecting-metadata">Collecting Metadata</a></h3>
+<p>Get all metadata as key-value pairs:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let pairs = exporter.collect_metadata();
+
+for (key, value) in &amp;pairs {
+    println!("{} = {}", key, value);
 }
 <span class="boring">}</span></code></pre></pre>
-<h3 id="modelmetadata"><a class="header" href="#modelmetadata">ModelMetadata</a></h3>
-<p>Tracks model information:</p>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>pub struct ModelMetadata {
-    pub name: String,
-    pub architecture: String,
-    pub version: String,
-    pub training_config: Option&lt;HashMap&lt;String, Value&gt;&gt;,
-    pub custom: HashMap&lt;String, Value&gt;,  // Flexible key-value pairs
+</span>use entrenar::ecosystem::GgufExportError;
+
+match exporter.export("model.safetensors", "model.gguf") {
+    Ok(result) =&gt; println!("Exported to {:?}", result.output_path),
+    Err(GgufExportError::InvalidQuantization(msg)) =&gt; {
+        eprintln!("Quantization error: {}", msg);
+    }
+    Err(GgufExportError::IoError(msg)) =&gt; {
+        eprintln!("I/O error: {}", msg);
+    }
+    Err(e) =&gt; eprintln!("Export failed: {}", e),
 }
 <span class="boring">}</span></code></pre></pre>
-<p><strong>Example</strong>:</p>
+<h2 id="integration-with-research-artifacts"><a class="header" href="#integration-with-research-artifacts">Integration with Research Artifacts</a></h2>
+<p>Combine with research module for full provenance:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>let metadata = ModelMetadata::new("llama-7b-lora", "transformer")
-    .with_version("0.1.0")
-    .with_custom("lora_rank", 64)
-    .with_custom("lora_alpha", 128)
-    .with_custom("base_model", "meta-llama/Llama-2-7b");
+</span>use entrenar::research::ResearchArtifact;
+use entrenar::ecosystem::{GgufExporter, ExperimentProvenance};
+
+// Create research artifact
+let artifact = ResearchArtifact::new(
+    "model-artifact",
+    "Fine-tuned LLaMA for Code",
+    ArtifactType::Model,
+    License::Mit,
+);
+
+// Create provenance from artifact
+let provenance = ExperimentProvenance::new(&amp;artifact.id, "run-001")
+    .with_custom("artifact_version", &amp;artifact.version);
+
+// Export with full provenance
+let exporter = GgufExporter::new(QuantizationType::Q4KM)
+    .with_provenance(provenance);
 <span class="boring">}</span></code></pre></pre>
-<h2 id="round-trip-integrity"><a class="header" href="#round-trip-integrity">Round-Trip Integrity</a></h2>
-<p>All save/load operations maintain <strong>round-trip integrity</strong>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Original model
-let original = create_model();
-
-// Save and load
-save_model(&amp;original, "temp.json", &amp;config)?;
-let loaded = load_model("temp.json")?;
-
-// Verify parameters match
-assert_eq!(original.parameters.len(), loaded.parameters.len());
-for (orig, load) in original.parameters.iter().zip(loaded.parameters.iter()) {
-    assert_eq!(orig.0, load.0);  // Parameter names
-    assert_tensors_equal(&amp;orig.1, &amp;load.1);  // Tensor values
-}
-<span class="boring">}</span></code></pre></pre>
-<p><strong>Validation</strong>: 54 I/O tests ensure round-trip correctness</p>
-<h2 id="auto-format-detection"><a class="header" href="#auto-format-detection">Auto-Format Detection</a></h2>
-<p>Format automatically detected from file extension:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// Detects SafeTensors from .safetensors extension
-let model = load_model("model.safetensors")?;
-
-// Detects JSON from .json extension
-let model = load_model("model.json")?;
-
-// Detects YAML from .yaml extension
-let model = load_model("config.yaml")?;
-<span class="boring">}</span></code></pre></pre>
-<h2 id="example-workflow"><a class="header" href="#example-workflow">Example Workflow</a></h2>
-<p>From <code>examples/model_io.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust">use entrenar::io::{Model, ModelMetadata, save_model, load_model, SaveConfig, ModelFormat};
-use entrenar::Tensor;
-
-fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    // Create model
-    let params = vec![
-        ("layer1.weight".to_string(), Tensor::from_vec(vec![0.1, 0.2, 0.3, 0.4], true)),
-        ("layer1.bias".to_string(), Tensor::from_vec(vec![0.01, 0.02], true)),
-        ("layer2.weight".to_string(), Tensor::from_vec(vec![0.5, 0.6], true)),
-        ("layer2.bias".to_string(), Tensor::from_vec(vec![0.1], true)),
-    ];
-
-    let metadata = ModelMetadata::new("example-model", "simple-mlp")
-        .with_version("0.1.0")
-        .with_custom("input_dim", 4)
-        .with_custom("hidden_dim", 2)
-        .with_custom("output_dim", 1);
-
-    let model = Model::new(metadata, params);
-
-    // Save as JSON
-    let json_config = SaveConfig::new(ModelFormat::Json).with_pretty(true);
-    save_model(&amp;model, "example_model.json", &amp;json_config)?;
-
-    // Save as YAML
-    let yaml_config = SaveConfig::new(ModelFormat::Yaml);
-    save_model(&amp;model, "example_model.yaml", &amp;yaml_config)?;
-
-    // Load and verify
-    let loaded = load_model("example_model.json")?;
-    println!("✅ Loaded model: {}", loaded.metadata.name);
-
-    Ok(())
-}</code></pre></pre>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
 <ul>
-<li><a href="./save-models.html">Save Models</a> - Detailed save functionality</li>
-<li><a href="./load-models.html">Load Models</a> - Loading and deserialization</li>
-<li><a href="./metadata.html">Model Metadata</a> - Metadata management</li>
-<li><a href="./formats.html">Supported Formats</a> - Format details</li>
-<li><a href="./safetensors-format.html">SafeTensors Format</a> - HuggingFace compatible format</li>
-</ul>
-<h2 id="implementation"><a class="header" href="#implementation">Implementation</a></h2>
-<p>All Model I/O code is in <code>src/io/</code>:</p>
-<ul>
-<li><code>mod.rs</code> - Public API exports</li>
-<li><code>model.rs</code> - Model and ModelMetadata structs</li>
-<li><code>format.rs</code> - ModelFormat enum and SaveConfig</li>
-<li><code>save.rs</code> - save_model() function (incl. SafeTensors serialization)</li>
-<li><code>load.rs</code> - load_model() function (incl. SafeTensors deserialization)</li>
-<li><code>tests.rs</code> - Integration tests (54 total across module)</li>
+<li><a href="./overview.html">Ecosystem Overview</a></li>
+<li><a href="../io/overview.html">Model I/O</a> - Other model formats</li>
+<li><a href="../io/gguf-format.html">GGUF Format</a> - GGUF specification</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../ecosystem/ruchy.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ecosystem/batuta.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../io/save-models.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ecosystem/ruchy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -373,11 +368,11 @@ fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../ecosystem/ruchy.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ecosystem/batuta.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../io/save-models.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ecosystem/ruchy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

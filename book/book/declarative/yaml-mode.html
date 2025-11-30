@@ -1,0 +1,650 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>YAML Mode Training (v1.0) - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/declarative/yaml-mode.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="yaml-mode-training-v10"><a class="header" href="#yaml-mode-training-v10">YAML Mode Training (v1.0)</a></h1>
+<p>YAML Mode Training enables ML practitioners to configure, execute, and monitor model training using only YAML configuration files. No code required.</p>
+<h2 id="core-principles-toyota-way"><a class="header" href="#core-principles-toyota-way">Core Principles (Toyota Way)</a></h2>
+<p>The YAML Mode Training system is built on Toyota Way manufacturing principles:</p>
+<ul>
+<li><strong>Muda Elimination</strong>: No redundant code; configuration-only workflows</li>
+<li><strong>Poka-yoke</strong>: Schema validation catches errors at parse time, not runtime</li>
+<li><strong>Jidoka</strong>: Built-in quality with automatic checkpointing and early stopping</li>
+<li><strong>Heijunka</strong>: Reproducible training through deterministic seeding</li>
+<li><strong>Kaizen</strong>: Experiment tracking enables iterative refinement</li>
+</ul>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<h3 id="initialize-a-new-configuration"><a class="header" href="#initialize-a-new-configuration">Initialize a New Configuration</a></h3>
+<pre><code class="language-bash"># Generate a minimal config
+entrenar init --template minimal -o config.yaml
+
+# Generate a LoRA fine-tuning config
+entrenar init --template lora --name my-lora-exp -o lora.yaml
+
+# Generate a QLoRA config with 4-bit quantization
+entrenar init --template qlora -o qlora.yaml
+
+# Generate a full config with all options
+entrenar init --template full -o full.yaml
+</code></pre>
+<h3 id="validate-configuration"><a class="header" href="#validate-configuration">Validate Configuration</a></h3>
+<pre><code class="language-bash">entrenar validate config.yaml
+</code></pre>
+<h3 id="run-training"><a class="header" href="#run-training">Run Training</a></h3>
+<pre><code class="language-bash">entrenar train config.yaml
+</code></pre>
+<h2 id="manifest-schema"><a class="header" href="#manifest-schema">Manifest Schema</a></h2>
+<h3 id="required-fields"><a class="header" href="#required-fields">Required Fields</a></h3>
+<p>Every manifest must include these three fields:</p>
+<pre><code class="language-yaml">entrenar: "1.0"           # Specification version (required)
+name: "my-experiment"     # Experiment identifier (required)
+version: "1.0.0"          # Experiment version (required)
+</code></pre>
+<h3 id="optional-global-fields"><a class="header" href="#optional-global-fields">Optional Global Fields</a></h3>
+<pre><code class="language-yaml">description: "Fine-tune LLaMA on Alpaca dataset"
+seed: 42                  # Global random seed for reproducibility
+</code></pre>
+<h2 id="configuration-sections"><a class="header" href="#configuration-sections">Configuration Sections</a></h2>
+<h3 id="data-configuration"><a class="header" href="#data-configuration">Data Configuration</a></h3>
+<pre><code class="language-yaml">data:
+  # Data source (supports local paths, hf://, pacha://, s3://)
+  source: "hf://tatsu-lab/alpaca"
+  format: "parquet"       # Auto-detected if omitted
+
+  # Train/val/test split ratios
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+    stratify: "label"     # Column for stratified sampling
+    seed: 42              # Split-specific seed
+
+  # DataLoader settings
+  loader:
+    batch_size: 32
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    drop_last: false
+</code></pre>
+<h3 id="model-configuration"><a class="header" href="#model-configuration">Model Configuration</a></h3>
+<pre><code class="language-yaml">model:
+  # Model source (supports local paths, hf://, pacha://)
+  source: "hf://meta-llama/Llama-2-7b"
+  format: "safetensors"   # Auto-detected if omitted
+
+  # Device placement
+  device: "auto"          # auto, cpu, cuda, cuda:0, mps
+  dtype: "float16"        # float32, float16, bfloat16
+
+  # Freeze specific layers
+  freeze:
+    - "embed_tokens"
+    - "layers.0"
+</code></pre>
+<h3 id="optimizer-configuration"><a class="header" href="#optimizer-configuration">Optimizer Configuration</a></h3>
+<pre><code class="language-yaml">optimizer:
+  name: "adamw"           # sgd, adam, adamw, rmsprop, adagrad, lamb
+  lr: 0.001               # Learning rate (required)
+  weight_decay: 0.01
+  betas: [0.9, 0.999]     # Adam/AdamW betas
+  eps: 1e-8
+</code></pre>
+<h3 id="scheduler-configuration"><a class="header" href="#scheduler-configuration">Scheduler Configuration</a></h3>
+<pre><code class="language-yaml">scheduler:
+  name: "cosine_annealing"  # step, cosine, linear, exponential, plateau, one_cycle
+
+  warmup:
+    steps: 1000           # Warmup steps
+    start_lr: 1e-7        # Starting learning rate
+
+  T_max: 10000            # Cosine annealing T_max
+  eta_min: 1e-6           # Minimum learning rate
+</code></pre>
+<h3 id="training-configuration"><a class="header" href="#training-configuration">Training Configuration</a></h3>
+<pre><code class="language-yaml">training:
+  # Duration (mutually exclusive - choose ONE)
+  epochs: 10              # Number of epochs
+  # max_steps: 50000      # OR maximum steps
+  # duration: "2h30m"     # OR wall-clock time
+
+  # Gradient settings
+  gradient:
+    accumulation_steps: 4
+    clip_norm: 1.0
+
+  # Mixed precision training
+  mixed_precision:
+    enabled: true
+    dtype: "bfloat16"
+    loss_scale: "dynamic"
+
+  # Checkpointing
+  checkpoint:
+    save_every: 1000
+    keep_last: 3
+    save_best: true
+    metric: "val_loss"
+    mode: "min"
+
+  # Early stopping (Jidoka)
+  early_stopping:
+    enabled: true
+    metric: "val_loss"
+    patience: 5
+    min_delta: 0.001
+    mode: "min"
+</code></pre>
+<h3 id="lora-configuration"><a class="header" href="#lora-configuration">LoRA Configuration</a></h3>
+<pre><code class="language-yaml">lora:
+  enabled: true
+  rank: 16                # Rank of low-rank matrices
+  alpha: 32               # Scaling factor
+  dropout: 0.05
+
+  target_modules:         # Modules to apply LoRA to
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+
+  bias: "none"            # none, all, lora_only
+  init_weights: "gaussian"
+</code></pre>
+<h3 id="qlora-configuration"><a class="header" href="#qlora-configuration">QLoRA Configuration</a></h3>
+<p>For memory-efficient fine-tuning, add quantization to LoRA:</p>
+<pre><code class="language-yaml">lora:
+  enabled: true
+  rank: 64
+  alpha: 128
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+
+  # QLoRA specific
+  quantize_base: true     # Quantize base model
+  quantize_bits: 4        # 4-bit quantization
+  double_quantize: true   # Double quantization
+  quant_type: "nf4"       # nf4 or fp4
+</code></pre>
+<h3 id="quantization-configuration"><a class="header" href="#quantization-configuration">Quantization Configuration</a></h3>
+<p>For post-training or quantization-aware training:</p>
+<pre><code class="language-yaml">quantize:
+  enabled: true
+  bits: 8                 # 2, 4, or 8
+  scheme: "symmetric"     # symmetric, asymmetric, dynamic
+  granularity: "per_channel"
+  group_size: 128
+
+  exclude:                # Layers to skip
+    - "lm_head"
+    - "embed_tokens"
+</code></pre>
+<h3 id="monitoring-configuration"><a class="header" href="#monitoring-configuration">Monitoring Configuration</a></h3>
+<pre><code class="language-yaml">monitoring:
+  # Terminal visualization
+  terminal:
+    enabled: true
+    refresh_rate: 100     # ms
+    metrics:
+      - loss
+      - accuracy
+      - learning_rate
+    charts:
+      - type: sparkline
+        metric: loss
+        window: 100
+      - type: progress
+        show_eta: true
+
+  # Experiment tracking
+  tracking:
+    enabled: true
+    backend: "trueno-db"  # trueno-db, mlflow, wandb, tensorboard
+    project: "my-project"
+    experiment: "{{ name }}-{{ timestamp }}"
+
+  # System metrics
+  system:
+    enabled: true
+    interval: 1000
+    metrics:
+      - cpu_percent
+      - memory_mb
+      - gpu_utilization
+      - gpu_memory_mb
+
+  # Alerts (Andon system)
+  alerts:
+    - condition: "loss &gt; 10"
+      action: "warn"
+      message: "Loss explosion detected"
+    - condition: "gpu_memory &gt; 0.95"
+      action: "halt"
+      message: "GPU OOM imminent"
+</code></pre>
+<h3 id="callbacks-configuration"><a class="header" href="#callbacks-configuration">Callbacks Configuration</a></h3>
+<pre><code class="language-yaml">callbacks:
+  - type: checkpoint
+    trigger: epoch_end
+
+  - type: lr_monitor
+    trigger: step
+
+  - type: gradient_monitor
+    trigger: step
+    interval: 100
+
+  - type: sample_predictions
+    trigger: epoch_end
+    config:
+      num_samples: 5
+</code></pre>
+<h3 id="output-configuration"><a class="header" href="#output-configuration">Output Configuration</a></h3>
+<pre><code class="language-yaml">output:
+  # Output directory (supports template expressions)
+  dir: "./experiments/{{ name }}/{{ timestamp }}"
+
+  model:
+    format: "safetensors"
+    save_optimizer: true
+    save_scheduler: true
+
+  metrics:
+    format: "parquet"
+    include:
+      - train_loss
+      - val_loss
+      - accuracy
+
+  report:
+    enabled: true
+    format: "markdown"
+    include_plots: true
+
+  registry:
+    enabled: true
+    target: "pacha://models/{{ name }}:{{ version }}"
+</code></pre>
+<h2 id="template-expressions"><a class="header" href="#template-expressions">Template Expressions</a></h2>
+<p>YAML Mode supports template expressions using <code>{{ }}</code> syntax:</p>
+<div class="table-wrapper"><table><thead><tr><th>Expression</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>{{ name }}</code></td><td>Experiment name</td></tr>
+<tr><td><code>{{ version }}</code></td><td>Experiment version</td></tr>
+<tr><td><code>{{ timestamp }}</code></td><td>ISO timestamp</td></tr>
+<tr><td><code>{{ date }}</code></td><td>Date (YYYY-MM-DD)</td></tr>
+<tr><td><code>{{ seed }}</code></td><td>Random seed</td></tr>
+</tbody></table>
+</div>
+<h2 id="validation-poka-yoke"><a class="header" href="#validation-poka-yoke">Validation (Poka-yoke)</a></h2>
+<p>The manifest is validated at parse time to catch errors early:</p>
+<h3 id="automatic-checks"><a class="header" href="#automatic-checks">Automatic Checks</a></h3>
+<ul>
+<li><strong>Version compatibility</strong>: Only <code>entrenar: "1.0"</code> supported</li>
+<li><strong>Required fields</strong>: <code>name</code>, <code>version</code> must be non-empty</li>
+<li><strong>Type constraints</strong>: Numbers, strings, arrays validated</li>
+<li><strong>Range constraints</strong>: <code>lr &gt; 0</code>, <code>batch_size &gt;= 1</code>, <code>epochs &gt;= 1</code></li>
+<li><strong>Mutual exclusivity</strong>: <code>epochs</code> XOR <code>max_steps</code> XOR <code>duration</code></li>
+<li><strong>Split ratios</strong>: Must sum to 1.0</li>
+<li><strong>Quantization bits</strong>: Only 2, 4, or 8 allowed</li>
+</ul>
+<h3 id="example-validation-errors"><a class="header" href="#example-validation-errors">Example Validation Errors</a></h3>
+<pre><code class="language-bash">$ entrenar validate invalid.yaml
+Error: Unsupported entrenar version: 2.0. Supported versions: 1.0
+
+$ entrenar validate bad-lr.yaml
+Error: Invalid range for optimizer.lr: -0.001 (expected &gt; 0)
+
+$ entrenar validate bad-split.yaml
+Error: Invalid split ratios: sum is 1.2 (expected 1.0)
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h2>
+<p>Here's a complete LLaMA-2 QLoRA fine-tuning configuration:</p>
+<pre><code class="language-yaml">entrenar: "1.0"
+name: "llama2-alpaca-qlora"
+version: "1.0.0"
+description: "Fine-tune LLaMA-2-7B on Alpaca using QLoRA"
+seed: 42
+
+data:
+  source: "hf://tatsu-lab/alpaca"
+  split:
+    train: 0.9
+    val: 0.1
+    seed: 42
+  loader:
+    batch_size: 4
+    shuffle: true
+    num_workers: 4
+
+model:
+  source: "hf://meta-llama/Llama-2-7b"
+  device: "auto"
+  dtype: "float16"
+
+optimizer:
+  name: "adamw"
+  lr: 0.0002
+  betas: [0.9, 0.999]
+  weight_decay: 0.01
+
+scheduler:
+  name: "cosine_annealing"
+  warmup:
+    steps: 100
+  T_max: 10000
+  eta_min: 1e-6
+
+training:
+  epochs: 3
+  gradient:
+    accumulation_steps: 16
+    clip_norm: 1.0
+  mixed_precision:
+    enabled: true
+    dtype: "bfloat16"
+  checkpoint:
+    save_every: 500
+    keep_last: 2
+    save_best: true
+  early_stopping:
+    enabled: true
+    patience: 3
+
+lora:
+  enabled: true
+  rank: 64
+  alpha: 128
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+  quantize_base: true
+  quantize_bits: 4
+  quant_type: "nf4"
+
+monitoring:
+  terminal:
+    enabled: true
+    metrics: [loss, accuracy, learning_rate]
+  tracking:
+    enabled: true
+    backend: "trueno-db"
+    project: "llama-finetune"
+
+output:
+  dir: "./experiments/llama2-alpaca/{{ timestamp }}"
+  model:
+    format: "safetensors"
+</code></pre>
+<h2 id="cli-reference"><a class="header" href="#cli-reference">CLI Reference</a></h2>
+<h3 id="entrenar-init"><a class="header" href="#entrenar-init"><code>entrenar init</code></a></h3>
+<p>Generate a new training manifest from a template.</p>
+<pre><code class="language-bash">entrenar init [OPTIONS]
+
+Options:
+  -t, --template &lt;TEMPLATE&gt;  Template: minimal, lora, qlora, full [default: minimal]
+  -o, --output &lt;PATH&gt;        Output file (stdout if not specified)
+  --name &lt;NAME&gt;              Experiment name [default: my-experiment]
+  --model &lt;URI&gt;              Model source path or URI
+  --data &lt;URI&gt;               Data source path or URI
+</code></pre>
+<h3 id="entrenar-validate"><a class="header" href="#entrenar-validate"><code>entrenar validate</code></a></h3>
+<p>Validate a manifest without running training.</p>
+<pre><code class="language-bash">entrenar validate &lt;CONFIG&gt;
+
+Options:
+  --detailed                 Show detailed validation output
+</code></pre>
+<h3 id="entrenar-train"><a class="header" href="#entrenar-train"><code>entrenar train</code></a></h3>
+<p>Run training from a YAML manifest.</p>
+<pre><code class="language-bash">entrenar train &lt;CONFIG&gt; [OPTIONS]
+
+Options:
+  --dry-run                  Validate only, don't train
+  --epochs &lt;N&gt;               Override epochs
+  --lr &lt;RATE&gt;                Override learning rate
+  --batch-size &lt;N&gt;           Override batch size
+</code></pre>
+<h2 id="programmatic-usage"><a class="header" href="#programmatic-usage">Programmatic Usage</a></h2>
+<p>You can also use YAML Mode from Rust code:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::yaml_mode::{load_manifest, validate_manifest, Template, generate_yaml};
+
+// Load and validate a manifest
+let manifest = load_manifest(Path::new("config.yaml"))?;
+
+// Generate from template
+let yaml = generate_yaml(Template::Qlora, "my-exp", Some("model.safetensors"), None);
+
+// Manual validation
+validate_manifest(&amp;manifest)?;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="references"><a class="header" href="#references">References</a></h2>
+<p>YAML Mode Training is informed by:</p>
+<ol>
+<li>Liker, J. K. (2004). <em>The Toyota Way</em>. McGraw-Hill.</li>
+<li>Hu, E. J., et al. (2021). LoRA: Low-Rank Adaptation of Large Language Models.</li>
+<li>Dettmers, T., et al. (2023). QLoRA: Efficient Finetuning of Quantized LLMs.</li>
+<li>Sculley, D., et al. (2015). Hidden Technical Debt in Machine Learning Systems.</li>
+</ol>
+<p>See <a href="../../docs/specifications/yaml-mode-train.html">docs/specifications/yaml-mode-train.md</a> for the complete specification with all 20 peer-reviewed citations.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../declarative/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../declarative/yaml-examples.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../declarative/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../declarative/yaml-examples.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>WASM Bindings - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/dashboard/wasm.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,237 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+                        <h1 id="wasm-bindings"><a class="header" href="#wasm-bindings">WASM Bindings</a></h1>
+<p>The dashboard module provides WebAssembly bindings for browser-based training dashboards.</p>
+<h2 id="feature-flag"><a class="header" href="#feature-flag">Feature Flag</a></h2>
+<p>Enable WASM support in your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+entrenar = { version = "0.2", features = ["wasm"] }
+</code></pre>
+<h2 id="indexeddbstorage"><a class="header" href="#indexeddbstorage">IndexedDbStorage</a></h2>
+<p>Browser-compatible storage backend that implements <code>ExperimentStorage</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
-
-// Create collector
-let mut collector = MetricsCollector::new();
-
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
-
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
+</span>pub struct IndexedDbStorage {
+    // In-memory implementation mimicking IndexedDB behavior
 }
 
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
+impl ExperimentStorage for IndexedDbStorage {
+    fn create_experiment(&amp;mut self, name: &amp;str, config: Option&lt;Value&gt;) -&gt; Result&lt;String&gt;;
+    fn create_run(&amp;mut self, experiment_id: &amp;str) -&gt; Result&lt;String&gt;;
+    fn start_run(&amp;mut self, run_id: &amp;str) -&gt; Result&lt;()&gt;;
+    fn complete_run(&amp;mut self, run_id: &amp;str, status: RunStatus) -&gt; Result&lt;()&gt;;
+    fn log_metric(&amp;mut self, run_id: &amp;str, key: &amp;str, step: u64, value: f64) -&gt; Result&lt;()&gt;;
+    fn log_artifact(&amp;mut self, run_id: &amp;str, key: &amp;str, data: &amp;[u8]) -&gt; Result&lt;String&gt;;
+    fn get_metrics(&amp;self, run_id: &amp;str, key: &amp;str) -&gt; Result&lt;Vec&lt;MetricPoint&gt;&gt;;
+    fn get_run_status(&amp;self, run_id: &amp;str) -&gt; Result&lt;RunStatus&gt;;
+    fn set_span_id(&amp;mut self, run_id: &amp;str, span_id: &amp;str) -&gt; Result&lt;()&gt;;
+    fn get_span_id(&amp;self, run_id: &amp;str) -&gt; Result&lt;Option&lt;String&gt;&gt;;
+}
 <span class="boring">}</span></code></pre></pre>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
-<pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
+<h3 id="additional-methods"><a class="header" href="#additional-methods">Additional Methods</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl IndexedDbStorage {
+    /// List all experiments
+    pub fn list_experiments(&amp;self) -&gt; Vec&lt;String&gt;;
+
+    /// List all runs for an experiment
+    pub fn list_runs(&amp;self, experiment_id: &amp;str) -&gt; Vec&lt;String&gt;;
+
+    /// List all metric keys for a run
+    pub fn list_metric_keys(&amp;self, run_id: &amp;str) -&gt; Vec&lt;String&gt;;
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="wasmrun"><a class="header" href="#wasmrun">WasmRun</a></h2>
+<p>JavaScript-friendly training run wrapper with <code>wasm_bindgen</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[wasm_bindgen]
+pub struct WasmRun {
+    run_id: String,
+    experiment_id: String,
+    storage: Arc&lt;Mutex&lt;IndexedDbStorage&gt;&gt;,
+    step_counters: HashMap&lt;String, u64&gt;,
+    finished: bool,
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="javascript-api"><a class="header" href="#javascript-api">JavaScript API</a></h3>
+<pre><code class="language-javascript">// Create a new run
+const run = await WasmRun.new('my-experiment');
+
+// Log metrics (auto-incrementing step)
+run.log_metric('loss', 0.5);
+run.log_metric('loss', 0.4);
+run.log_metric('accuracy', 0.85);
+
+// Log at specific step
+run.log_metric_at('learning_rate', 100, 0.001);
+
+// Get all metrics as JSON
+const metrics = JSON.parse(run.get_metrics_json());
+// {
+//   "loss": [
+//     {"step": 0, "value": 0.5, "timestamp": "..."},
+//     {"step": 1, "value": 0.4, "timestamp": "..."}
+//   ],
+//   "accuracy": [
+//     {"step": 0, "value": 0.85, "timestamp": "..."}
+//   ]
+// }
+
+// Subscribe to metric updates
+run.subscribe_metrics((key, value) =&gt; {
+    console.log(`${key}: ${value}`);
+});
+
+// Get run info
+console.log(run.run_id());        // "run-0"
+console.log(run.experiment_id()); // "exp-0"
+console.log(run.current_step('loss')); // 2
+console.log(run.is_finished());   // false
+
+// Finish the run
+run.finish();  // Success status
+// or
+run.fail();    // Failed status
 </code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
-</tbody></table>
-</div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h2 id="building-for-wasm"><a class="header" href="#building-for-wasm">Building for WASM</a></h2>
+<h3 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h3>
+<pre><code class="language-bash"># Install wasm-pack
+cargo install wasm-pack
+
+# Install wasm32 target
+rustup target add wasm32-unknown-unknown
+</code></pre>
+<h3 id="build"><a class="header" href="#build">Build</a></h3>
+<pre><code class="language-bash"># Build for bundler (webpack, etc.)
+wasm-pack build --target bundler --features wasm
+
+# Build for web (no bundler)
+wasm-pack build --target web --features wasm
+
+# Build for Node.js
+wasm-pack build --target nodejs --features wasm
+</code></pre>
+<h3 id="output"><a class="header" href="#output">Output</a></h3>
+<pre><code>pkg/
+├── entrenar.js           # JavaScript bindings
+├── entrenar.d.ts         # TypeScript definitions
+├── entrenar_bg.wasm      # WebAssembly module
+├── entrenar_bg.wasm.d.ts # WASM TypeScript defs
+└── package.json          # npm package
+</code></pre>
+<h2 id="usage-in-web-applications"><a class="header" href="#usage-in-web-applications">Usage in Web Applications</a></h2>
+<h3 id="with-a-bundler-webpackvite"><a class="header" href="#with-a-bundler-webpackvite">With a Bundler (Webpack/Vite)</a></h3>
+<pre><code class="language-javascript">// Install: npm install ./pkg
+import init, { WasmRun } from 'entrenar';
+
+async function main() {
+    await init();
+
+    const run = WasmRun.new('training-session');
+
+    // Training loop
+    for (let epoch = 0; epoch &lt; 100; epoch++) {
+        const loss = trainEpoch();
+        run.log_metric('loss', loss);
+
+        updateChart(JSON.parse(run.get_metrics_json()));
+    }
+
+    run.finish();
+}
+
+main();
+</code></pre>
+<h3 id="without-a-bundler"><a class="header" href="#without-a-bundler">Without a Bundler</a></h3>
+<pre><code class="language-html">&lt;script type="module"&gt;
+    import init, { WasmRun } from './pkg/entrenar.js';
+
+    async function main() {
+        await init();
+
+        const run = WasmRun.new('browser-training');
+        run.log_metric('loss', 0.5);
+
+        document.getElementById('metrics').textContent =
+            run.get_metrics_json();
+    }
+
+    main();
+&lt;/script&gt;
+</code></pre>
+<h3 id="react-example"><a class="header" href="#react-example">React Example</a></h3>
+<pre><code class="language-jsx">import { useEffect, useState, useRef } from 'react';
+import init, { WasmRun } from 'entrenar';
+
+function TrainingDashboard() {
+    const [metrics, setMetrics] = useState({});
+    const runRef = useRef(null);
+
+    useEffect(() =&gt; {
+        async function setup() {
+            await init();
+            runRef.current = WasmRun.new('react-training');
+        }
+        setup();
+
+        return () =&gt; {
+            if (runRef.current &amp;&amp; !runRef.current.is_finished()) {
+                runRef.current.finish();
+            }
+        };
+    }, []);
+
+    const logMetric = (key, value) =&gt; {
+        if (runRef.current) {
+            runRef.current.log_metric(key, value);
+            setMetrics(JSON.parse(runRef.current.get_metrics_json()));
+        }
+    };
+
+    return (
+        &lt;div&gt;
+            &lt;button onClick={() =&gt; logMetric('loss', Math.random())}&gt;
+                Log Random Loss
+            &lt;/button&gt;
+            &lt;pre&gt;{JSON.stringify(metrics, null, 2)}&lt;/pre&gt;
+        &lt;/div&gt;
+    );
+}
+</code></pre>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<p>WASM methods return <code>Result&lt;T, JsValue&gt;</code> which throws on error:</p>
+<pre><code class="language-javascript">try {
+    const run = WasmRun.new('my-experiment');
+    run.log_metric('loss', 0.5);
+} catch (error) {
+    console.error('WASM error:', error);
+}
+</code></pre>
+<h2 id="limitations"><a class="header" href="#limitations">Limitations</a></h2>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li><strong>No real IndexedDB</strong> - Current implementation uses in-memory storage</li>
+<li><strong>Single-threaded</strong> - WebAssembly runs on the main thread</li>
+<li><strong>No persistence</strong> - Data is lost on page refresh</li>
+<li><strong>Subscribe placeholder</strong> - <code>subscribe_metrics</code> is a placeholder API</li>
+</ul>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="./overview.html">Dashboard Overview</a></li>
+<li><a href="./dashboard-source.html">DashboardSource Trait</a></li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../dashboard/dashboard-source.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ecosystem/overview.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +398,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../dashboard/dashboard-source.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ecosystem/overview.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

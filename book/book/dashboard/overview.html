@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/dashboard/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,147 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
+                        <h1 id="dashboard-overview"><a class="header" href="#dashboard-overview">Dashboard Overview</a></h1>
+<p>The Dashboard module provides real-time training monitoring capabilities with support for both native and browser-based dashboards.</p>
 <h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
+<ul>
+<li><strong>DashboardSource trait</strong> - Unified interface for training data access</li>
+<li><strong>Trend analysis</strong> - Automatic detection of metric trends (Rising, Falling, Stable)</li>
+<li><strong>Resource monitoring</strong> - GPU, CPU, and memory utilization tracking</li>
+<li><strong>WASM support</strong> - Browser-compatible dashboard bindings</li>
+</ul>
 <h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
+</span>use std::sync::{Arc, Mutex};
+use entrenar::storage::{InMemoryStorage, ExperimentStorage};
+use entrenar::run::{Run, TracingConfig};
+use entrenar::dashboard::{DashboardSource, Trend};
 
-// Create collector
-let mut collector = MetricsCollector::new();
+// Create storage and run
+let mut storage = InMemoryStorage::new();
+let exp_id = storage.create_experiment("my-exp", None).unwrap();
+let storage = Arc::new(Mutex::new(storage));
 
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
+let mut run = Run::new(&amp;exp_id, storage.clone(), TracingConfig::disabled()).unwrap();
 
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
+// Log some metrics
+run.log_metric("loss", 0.5).unwrap();
+run.log_metric("loss", 0.4).unwrap();
+run.log_metric("loss", 0.3).unwrap();
+
+// Get dashboard data
+let status = run.status();
+let metrics = run.recent_metrics(10);
+let resources = run.resource_usage();
+
+// Analyze trends
+if let Some(loss) = metrics.get("loss") {
+    println!("Loss trend: {} {}", loss.trend, loss.trend.emoji());
+    println!("Latest: {:?}", loss.latest());
+    println!("Min: {:?}", loss.min());
+    println!("Max: {:?}", loss.max());
 }
-
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
 <span class="boring">}</span></code></pre></pre>
 <h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
 <pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
+│                    Dashboard Module                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────┐    ┌──────────────────┐              │
+│  │  DashboardSource │    │  MetricSnapshot  │              │
+│  │      trait       │───▶│    + Trend       │              │
+│  └──────────────────┘    └──────────────────┘              │
+│           │                                                  │
+│           │              ┌──────────────────┐              │
+│           │              │ ResourceSnapshot │              │
+│           └─────────────▶│  GPU/CPU/Memory  │              │
+│                          └──────────────────┘              │
+│                                                              │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
+│  │                  WASM Module (optional)               │  │
+│  │  ┌────────────────┐    ┌────────────────────┐       │  │
+│  │  │ IndexedDbStorage│    │     WasmRun        │       │  │
+│  │  │ ExperimentStorage│    │  wasm_bindgen API │       │  │
+│  │  └────────────────┘    └────────────────────┘       │  │
 │  └──────────────────────────────────────────────────────┘  │
+│                                                              │
 └─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
 </code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
+<h2 id="key-types"><a class="header" href="#key-types">Key Types</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>DashboardSource</code></td><td>Trait for providing dashboard data</td></tr>
+<tr><td><code>MetricSnapshot</code></td><td>Time-series metric data with trend</td></tr>
+<tr><td><code>ResourceSnapshot</code></td><td>System resource utilization</td></tr>
+<tr><td><code>Trend</code></td><td>Metric direction (Rising, Falling, Stable)</td></tr>
+<tr><td><code>IndexedDbStorage</code></td><td>Browser-compatible storage (WASM)</td></tr>
+<tr><td><code>WasmRun</code></td><td>JavaScript-friendly run wrapper (WASM)</td></tr>
 </tbody></table>
 </div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h2 id="use-cases"><a class="header" href="#use-cases">Use Cases</a></h2>
+<h3 id="terminal-dashboard"><a class="header" href="#terminal-dashboard">Terminal Dashboard</a></h3>
+<p>Monitor training progress in the terminal with real-time updates:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::dashboard::DashboardSource;
+
+loop {
+    let metrics = run.recent_metrics(50);
+    let resources = run.resource_usage();
+
+    // Update terminal display
+    print!("\r");
+    for (key, snapshot) in &amp;metrics {
+        print!("{}: {:.4} {} | ", key,
+            snapshot.latest().unwrap_or(0.0),
+            snapshot.trend.emoji());
+    }
+    print!("GPU: {:.1}%", resources.gpu_util * 100.0);
+
+    std::thread::sleep(std::time::Duration::from_secs(1));
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="browser-dashboard"><a class="header" href="#browser-dashboard">Browser Dashboard</a></h3>
+<p>Use WASM bindings for interactive web dashboards:</p>
+<pre><code class="language-javascript">import { WasmRun } from 'entrenar';
+
+const run = await WasmRun.new('my-experiment');
+
+// Log metrics during training
+run.log_metric('loss', 0.5);
+run.log_metric('accuracy', 0.85);
+
+// Get all metrics as JSON
+const metrics = JSON.parse(run.get_metrics_json());
+console.log(metrics);
+
+// Finish the run
+run.finish();
+</code></pre>
+<h2 id="feature-flags"><a class="header" href="#feature-flags">Feature Flags</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Feature</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>wasm</code></td><td>Enable WASM bindings for browser support</td></tr>
+</tbody></table>
+</div>
+<pre><code class="language-toml">[dependencies]
+entrenar = { version = "0.2", features = ["wasm"] }
+</code></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li><a href="./dashboard-source.html">DashboardSource Trait</a> - Detailed trait documentation</li>
+<li><a href="./wasm.html">WASM Bindings</a> - Browser dashboard setup</li>
+<li><a href="../monitor/overview.html">Real-Time Monitoring</a> - Terminal monitoring features</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../monitor/hansei.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../dashboard/dashboard-source.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +308,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../monitor/hansei.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../dashboard/dashboard-source.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

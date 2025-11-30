@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+        <title>Batuta Integration - Entrenar - Training &amp; Optimization Library</title>
 
 
         <!-- Custom HTML head -->
@@ -129,7 +129,7 @@
                         <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/monitor/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/ecosystem/batuta.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -158,92 +158,162 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="real-time-training-monitoring"><a class="header" href="#real-time-training-monitoring">Real-Time Training Monitoring</a></h1>
-<p>The monitor module provides comprehensive real-time visibility into training runs, implementing Toyota Way principles for quality assurance.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<div class="table-wrapper"><table><thead><tr><th>Component</th><th>Purpose</th><th>Toyota Way Principle</th></tr></thead><tbody>
-<tr><td>MetricsCollector</td><td>Collect training metrics</td><td>Genchi Genbutsu (現地現物)</td></tr>
-<tr><td>Dashboard</td><td>ASCII terminal visualization</td><td>Visual Management</td></tr>
-<tr><td>DriftDetector</td><td>Anomaly detection</td><td>Jidoka (自働化)</td></tr>
-<tr><td>AndonSystem</td><td>Alert management</td><td>Andon (行灯)</td></tr>
-<tr><td>ModelLineage</td><td>Version tracking</td><td>Kaizen (改善)</td></tr>
-<tr><td>HanseiAnalyzer</td><td>Post-training reports</td><td>Hansei (反省)</td></tr>
-</tbody></table>
-</div>
-<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+                        <h1 id="batuta-integration"><a class="header" href="#batuta-integration">Batuta Integration</a></h1>
+<p>Batuta provides GPU pricing and queue management services. The ecosystem module integrates with Batuta for cost estimation and ETA adjustments.</p>
+<h2 id="batutaclient"><a class="header" href="#batutaclient">BatutaClient</a></h2>
+<p>The client for interacting with Batuta pricing and queue services:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use entrenar::monitor::{MetricsCollector, Metric, Dashboard, HanseiAnalyzer};
+</span>use entrenar::ecosystem::BatutaClient;
 
-// Create collector
-let mut collector = MetricsCollector::new();
+// Create client with fallback pricing
+let client = BatutaClient::new();
 
-// During training loop
-for epoch in 0..100 {
-    let loss = train_epoch(&amp;model, &amp;data);
-    let accuracy = evaluate(&amp;model, &amp;val_data);
-
-    collector.record(Metric::Loss, loss);
-    collector.record(Metric::Accuracy, accuracy);
-    collector.record(Metric::Epoch, epoch as f64);
-}
-
-// Generate post-training report
-let analyzer = HanseiAnalyzer::new();
-let report = analyzer.analyze("my-training-run", &amp;collector, duration_secs);
-println!("{}", analyzer.format_report(&amp;report));
+// Or connect to a Batuta instance
+let client = BatutaClient::with_url("http://batuta.local:8080")
+    .with_timeout(Duration::from_secs(10));
 <span class="boring">}</span></code></pre></pre>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
-<pre><code>┌─────────────────────────────────────────────────────────────┐
-│                    Training Loop                             │
-│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
-│  │ Forward │→│ Backward │→│ Optimize │→│ Metrics │        │
-│  └─────────┘  └─────────┘  └─────────┘  └────┬────┘        │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MetricsCollector                            │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Welford's Algorithm: O(1) per update                  │  │
-│  │ - Running mean, variance, min, max                    │  │
-│  │ - NaN/Inf detection                                   │  │
-│  └──────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-         │              │              │              │
-         ▼              ▼              ▼              ▼
-    ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐
-    │Dashboard│   │  Drift  │   │  Andon  │   │ Hansei  │
-    │ (ASCII) │   │Detector │   │ System  │   │Analyzer │
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
-</code></pre>
-<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
-<p>The monitor module is designed for minimal overhead:</p>
-<div class="table-wrapper"><table><thead><tr><th>Operation</th><th>Performance</th><th>Complexity</th></tr></thead><tbody>
-<tr><td>Record metric</td><td>&lt; 1μs</td><td>O(1)</td></tr>
-<tr><td>Get summary</td><td>&lt; 100μs</td><td>O(metrics)</td></tr>
-<tr><td>Dashboard render</td><td>&lt; 100ms</td><td>O(history)</td></tr>
-<tr><td>Drift detection</td><td>&lt; 50μs</td><td>O(1)</td></tr>
+<h2 id="gpu-pricing"><a class="header" href="#gpu-pricing">GPU Pricing</a></h2>
+<p>Get hourly rates for GPU types:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let pricing = client.get_hourly_rate("a100-80gb")?;
+
+println!("GPU: {}", pricing.gpu_type);
+println!("Rate: ${}/hr", pricing.hourly_rate);
+println!("Memory: {} GB", pricing.memory_gb);
+println!("Spot: {}", pricing.is_spot);
+println!("Provider: {}", pricing.provider);
+println!("Region: {}", pricing.region);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="available-gpus"><a class="header" href="#available-gpus">Available GPUs</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>GPU Type</th><th>Hourly Rate</th><th>Memory</th></tr></thead><tbody>
+<tr><td><code>a100-80gb</code></td><td>$3.00</td><td>80 GB</td></tr>
+<tr><td><code>a100-40gb</code></td><td>$2.50</td><td>40 GB</td></tr>
+<tr><td><code>h100-80gb</code></td><td>$4.50</td><td>80 GB</td></tr>
+<tr><td><code>v100</code></td><td>$2.00</td><td>16 GB</td></tr>
+<tr><td><code>t4</code></td><td>$0.50</td><td>16 GB</td></tr>
+<tr><td><code>l4</code></td><td>$0.75</td><td>24 GB</td></tr>
+<tr><td><code>a10g</code></td><td>$1.00</td><td>24 GB</td></tr>
 </tbody></table>
 </div>
-<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<h3 id="cost-estimation"><a class="header" href="#cost-estimation">Cost Estimation</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Estimate training cost
+let hours = 10.0;
+let cost = client.estimate_cost("a100-80gb", hours)?;
+println!("Estimated cost: ${:.2}", cost);
+
+// Find cheapest GPU meeting requirements
+if let Some(gpu) = client.cheapest_gpu(24) { // 24GB minimum
+    println!("Recommended: {} @ ${}/hr", gpu.gpu_type, gpu.hourly_rate);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="queue-management"><a class="header" href="#queue-management">Queue Management</a></h2>
+<p>Monitor queue state for GPU availability:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let queue = client.get_queue_depth("a100-80gb")?;
+
+println!("Queue depth: {}", queue.queue_depth);
+println!("Available GPUs: {}/{}", queue.available_gpus, queue.total_gpus);
+println!("Avg wait: {}s", queue.avg_wait_seconds);
+println!("Utilization: {:.1}%", queue.utilization() * 100.0);
+
+if queue.is_available() {
+    println!("GPUs available now!");
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="eta-adjustment"><a class="header" href="#eta-adjustment">ETA Adjustment</a></h2>
+<p>Adjust estimated completion time based on queue state:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::adjust_eta;
+
+let base_eta_seconds = 3600; // 1 hour training time
+let queue = client.get_queue_depth("a100-80gb")?;
+
+let adjusted = adjust_eta(base_eta_seconds, &amp;queue);
+println!("Adjusted ETA: {:?}", adjusted);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="adjustment-factors"><a class="header" href="#adjustment-factors">Adjustment Factors</a></h3>
+<p>The ETA is adjusted based on:</p>
+<ol>
+<li><strong>Queue wait time</strong> - If GPUs not immediately available</li>
+<li><strong>Average wait time</strong> - Historical wait times per queued job</li>
+<li><strong>Utilization</strong> - High utilization (&gt;80%) increases estimates</li>
+<li><strong>Queue ETA</strong> - Uses queue-provided ETA if higher</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Example adjustments:
+// - No queue: ETA unchanged
+// - 3 jobs queued, 5min avg wait: +15 minutes
+// - 90% utilization: +20% to ETA
+<span class="boring">}</span></code></pre></pre>
+<h2 id="fallback-pricing"><a class="header" href="#fallback-pricing">Fallback Pricing</a></h2>
+<p>When Batuta is unavailable, the client uses fallback pricing:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::FallbackPricing;
+
+let mut fallback = FallbackPricing::new();
+
+// Get fallback rate
+if let Some(pricing) = fallback.get_rate("v100") {
+    println!("Fallback rate: ${}/hr", pricing.hourly_rate);
+}
+
+// Add custom GPU pricing
+fallback.set_rate(GpuPricing::new("rtx-4090", 0.80, 24));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="custom-fallback"><a class="header" href="#custom-fallback">Custom Fallback</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let client = BatutaClient::new()
+    .with_fallback(FallbackPricing::new());
+<span class="boring">}</span></code></pre></pre>
+<h2 id="combined-status"><a class="header" href="#combined-status">Combined Status</a></h2>
+<p>Get pricing and queue state together:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let (pricing, queue) = client.get_status("a100-80gb")?;
+
+println!("GPU: {} @ ${}/hr", pricing.gpu_type, pricing.hourly_rate);
+println!("Available: {}", queue.is_available());
+<span class="boring">}</span></code></pre></pre>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::ecosystem::BatutaError;
+
+match client.get_hourly_rate("unknown-gpu") {
+    Ok(pricing) =&gt; println!("Rate: ${}", pricing.hourly_rate),
+    Err(BatutaError::UnknownGpuType(gpu)) =&gt; {
+        println!("Unknown GPU type: {}", gpu);
+    }
+    Err(BatutaError::ServiceUnavailable(msg)) =&gt; {
+        println!("Batuta unavailable: {}", msg);
+    }
+    Err(e) =&gt; println!("Error: {}", e),
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
 <ul>
-<li><a href="./metrics-collection.html">Metrics Collection</a> - Recording training metrics</li>
-<li><a href="./dashboard.html">Terminal Dashboard</a> - Live visualization</li>
-<li><a href="./drift-detection.html">Drift Detection</a> - Anomaly detection</li>
-<li><a href="./andon.html">Andon Alerting</a> - Stop-the-line on critical failures</li>
-<li><a href="./hansei.html">Hansei Reports</a> - Post-training analysis</li>
+<li><a href="./overview.html">Ecosystem Overview</a></li>
+<li><a href="../cli/benchmark.html">Benchmark Commands</a> - Cost-performance analysis</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../training/explainability.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../ecosystem/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../ecosystem/realizar.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -253,11 +323,11 @@ println!("{}", analyzer.format_report(&amp;report));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../training/explainability.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../ecosystem/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="../monitor/experiment-tracking.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../ecosystem/realizar.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

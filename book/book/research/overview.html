@@ -1,0 +1,482 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Overview - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/research/overview.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="academic-research-artifacts"><a class="header" href="#academic-research-artifacts">Academic Research Artifacts</a></h1>
+<p>The research module provides tools for academic research workflows, supporting FAIR data principles, proper attribution, and reproducible science.</p>
+<h2 id="why-research-artifacts"><a class="header" href="#why-research-artifacts">Why Research Artifacts?</a></h2>
+<p>Academic research requires:</p>
+<ul>
+<li><strong>Proper Attribution</strong>: CRediT taxonomy for contributor roles</li>
+<li><strong>Persistent Identifiers</strong>: ORCID for authors, ROR for institutions, DOI for artifacts</li>
+<li><strong>Reproducibility</strong>: Pre-registration with cryptographic commitments</li>
+<li><strong>FAIR Data</strong>: RO-Crate packaging for findable, accessible, interoperable, reusable data</li>
+<li><strong>Double-Blind Review</strong>: Anonymization support for peer review</li>
+</ul>
+<h2 id="components"><a class="header" href="#components">Components</a></h2>
+<h3 id="1-research-artifacts-ent-019"><a class="header" href="#1-research-artifacts-ent-019">1. Research Artifacts (ENT-019)</a></h3>
+<p>Core types for research metadata:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::{
+    ResearchArtifact, Author, Affiliation, ArtifactType,
+    License, ContributorRole
+};
+
+// Create an author with ORCID and CRediT roles
+let author = Author::new("Alice Smith")
+    .with_orcid("0000-0002-1825-0097")?
+    .with_affiliation(
+        Affiliation::new("MIT")
+            .with_ror_id("https://ror.org/03yrm5c26")?
+            .with_country("US")
+    )
+    .with_roles([
+        ContributorRole::Conceptualization,
+        ContributorRole::Software,
+        ContributorRole::WritingOriginal,
+    ]);
+
+// Create a research artifact
+let artifact = ResearchArtifact::new(
+    "dataset-2024-001",
+    "Novel Deep Learning Dataset",
+    ArtifactType::Dataset,
+    License::CcBy4,
+)
+.with_author(author)
+.with_doi("10.5281/zenodo.1234567")
+.with_description("A curated dataset for ML research")
+.with_keywords(["machine learning", "computer vision"]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="2-citation-generation-ent-020"><a class="header" href="#2-citation-generation-ent-020">2. Citation Generation (ENT-020)</a></h3>
+<p>Export citations in BibTeX and CITATION.cff formats:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::CitationMetadata;
+
+let citation = CitationMetadata::new(artifact, 2024)
+    .with_journal("Nature Machine Intelligence")
+    .with_volume("6")
+    .with_pages("123-145")
+    .with_url("https://example.com/paper");
+
+// Generate BibTeX
+let bibtex = citation.to_bibtex();
+// @article{smith_2024_novel,
+//   author = {Smith, Alice},
+//   title = {{Novel Deep Learning Dataset}},
+//   year = {2024},
+//   ...
+// }
+
+// Generate CITATION.cff
+let cff = citation.to_cff();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="3-literate-documents-ent-021"><a class="header" href="#3-literate-documents-ent-021">3. Literate Documents (ENT-021)</a></h3>
+<p>Parse and extract code from literate programming documents:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::LiterateDocument;
+
+let doc = LiterateDocument::parse_markdown(r#"
+<span class="boring">Analysis
+</span>
+```python
+import numpy as np
+data = np.load("dataset.npy")
+<span class="boring">}</span></code></pre></pre>
+<p>Results show significant improvement.
+"#);</p>
+<p>// Extract code blocks
+let blocks = doc.extract_code_blocks();
+for block in blocks {
+println!("Language: {:?}", block.language);
+println!("Line: {}", block.line_number);
+println!("Code: {}", block.content);
+}</p>
+<p>// Convert to HTML
+let html = doc.to_html();</p>
+<pre><code>
+### 4. Pre-Registration (ENT-022)
+
+Cryptographic commitment for research protocols:
+
+```rust
+use entrenar::research::{PreRegistration, SignedPreRegistration, TimestampProof};
+use ed25519_dalek::SigningKey;
+
+// Create pre-registration
+let prereg = PreRegistration::new(
+    "Effect of Treatment A on Outcome B",
+    "Treatment A improves Outcome B by 20%",
+    "Randomized controlled trial, n=100",
+    "Two-sample t-test, alpha=0.05",
+);
+
+// Create cryptographic commitment
+let commitment = prereg.commit();
+println!("Commitment hash: {}", commitment.hash);
+
+// Sign with Ed25519
+let signing_key = SigningKey::generate(&amp;mut rand::rngs::OsRng);
+let signed = SignedPreRegistration::sign(&amp;prereg, &amp;signing_key)
+    .with_timestamp_proof(TimestampProof::git("abc123"));
+
+// Later: verify the commitment
+let reveal = prereg.reveal(&amp;commitment)?;
+assert!(signed.verify()?);
+</code></pre>
+<h3 id="5-anonymization-ent-023"><a class="header" href="#5-anonymization-ent-023">5. Anonymization (ENT-023)</a></h3>
+<p>Double-blind review support:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::{AnonymizationConfig, anonymize_text};
+
+let config = AnonymizationConfig::new("review-salt-2024")
+    .with_author_replacement("Anonymous Author")
+    .with_affiliation_replacement("Anonymous Institution")
+    .with_strip_doi(true);
+
+// Anonymize artifact
+let anon_artifact = config.anonymize(&amp;artifact);
+
+// Export for double-blind review
+let json = anon_artifact.to_double_blind_json();
+// No author names, affiliations, or identifying info
+<span class="boring">}</span></code></pre></pre>
+<h3 id="6-jupyter-export-ent-024"><a class="header" href="#6-jupyter-export-ent-024">6. Jupyter Export (ENT-024)</a></h3>
+<p>Export to Jupyter notebook format:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::{NotebookExporter, KernelSpec, Cell};
+
+// Create notebook with Rust kernel
+let mut notebook = NotebookExporter::with_kernel(KernelSpec::evcxr());
+
+notebook.add_markdown("# Rust Analysis\n\nUsing entrenar for ML.");
+notebook.add_code(r#"
+use entrenar::autograd::Tensor;
+let x = Tensor::from_vec(vec![1.0, 2.0, 3.0]);
+"#);
+
+// Or convert from literate document
+let notebook = NotebookExporter::from_literate(&amp;doc);
+
+// Export to .ipynb
+let ipynb = notebook.to_ipynb();
+std::fs::write("analysis.ipynb", ipynb)?;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="7-citation-graph-ent-025"><a class="header" href="#7-citation-graph-ent-025">7. Citation Graph (ENT-025)</a></h3>
+<p>Track and aggregate citations:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::{CitationGraph, CitationNode, EdgeType};
+
+let mut graph = CitationGraph::new();
+
+// Add citation nodes
+graph.add_node("paper-a", CitationNode::new(citation_a, false));
+graph.add_node("paper-b", CitationNode::new(citation_b, true));
+graph.add_node("paper-c", CitationNode::new(citation_c, true));
+
+// Build citation relationships
+graph.add_citation("paper-a", "paper-b");
+graph.add_citation("paper-b", "paper-c");
+
+// Get all upstream citations (including transitive)
+let all_citations = graph.aggregate_all_citations("paper-a");
+
+// Export all to BibTeX
+let bibtex_all = graph.to_bibtex_all();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="8-ro-crate-packaging-ent-026"><a class="header" href="#8-ro-crate-packaging-ent-026">8. RO-Crate Packaging (ENT-026)</a></h3>
+<p>Create FAIR-compliant research object packages:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::RoCrate;
+
+// Create RO-Crate from artifact
+let mut crate_pkg = RoCrate::from_artifact(&amp;artifact, "./my-dataset");
+
+// Add data files
+crate_pkg.add_text_file("data/train.csv", "x,y\n1,2\n3,4");
+crate_pkg.add_text_file("README.md", "# Dataset\n\nDescription...");
+crate_pkg.add_file("model.safetensors", model_bytes);
+
+// Write to directory (creates ro-crate-metadata.json)
+crate_pkg.to_directory()?;
+
+// Or create ZIP archive
+let zip_bytes = crate_pkg.to_zip()?;
+std::fs::write("dataset.zip", zip_bytes)?;
+<span class="boring">}</span></code></pre></pre>
+<h3 id="9-archive-deposits-ent-027"><a class="header" href="#9-archive-deposits-ent-027">9. Archive Deposits (ENT-027)</a></h3>
+<p>Deposit to academic archives:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use entrenar::research::{ArchiveDeposit, ArchiveProvider, ZenodoConfig};
+
+// Configure Zenodo
+let config = ZenodoConfig::new("your-api-token")
+    .with_sandbox(true)  // Use sandbox for testing
+    .with_community("ml-research");
+
+// Create deposit
+let deposit = ArchiveDeposit::new(ArchiveProvider::Zenodo, artifact)
+    .with_text_file("README.md", readme_content)
+    .with_file("data.zip", data_bytes);
+
+// Submit (returns DOI)
+let result = deposit.deposit()?;
+println!("DOI: {}", result.doi);
+println!("URL: {}", result.url);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="credit-contributor-roles"><a class="header" href="#credit-contributor-roles">CRediT Contributor Roles</a></h2>
+<p>The module supports all 14 CRediT taxonomy roles:</p>
+<div class="table-wrapper"><table><thead><tr><th>Role</th><th>Description</th></tr></thead><tbody>
+<tr><td>Conceptualization</td><td>Ideas and research goals</td></tr>
+<tr><td>DataCuration</td><td>Data management and annotation</td></tr>
+<tr><td>FormalAnalysis</td><td>Statistical/computational analysis</td></tr>
+<tr><td>FundingAcquisition</td><td>Financial support</td></tr>
+<tr><td>Investigation</td><td>Research execution</td></tr>
+<tr><td>Methodology</td><td>Method development</td></tr>
+<tr><td>ProjectAdministration</td><td>Project management</td></tr>
+<tr><td>Resources</td><td>Materials and infrastructure</td></tr>
+<tr><td>Software</td><td>Programming and development</td></tr>
+<tr><td>Supervision</td><td>Oversight and leadership</td></tr>
+<tr><td>Validation</td><td>Verification of results</td></tr>
+<tr><td>Visualization</td><td>Data presentation</td></tr>
+<tr><td>WritingOriginal</td><td>Initial draft</td></tr>
+<tr><td>WritingReview</td><td>Critical review and editing</td></tr>
+</tbody></table>
+</div>
+<h2 id="supported-formats"><a class="header" href="#supported-formats">Supported Formats</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Format</th><th>Use Case</th></tr></thead><tbody>
+<tr><td>BibTeX</td><td>LaTeX citations</td></tr>
+<tr><td>CFF</td><td>GitHub CITATION.cff</td></tr>
+<tr><td>RO-Crate</td><td>FAIR data packages</td></tr>
+<tr><td>Jupyter</td><td>Interactive notebooks</td></tr>
+<tr><td>JSON-LD</td><td>Linked data</td></tr>
+</tbody></table>
+</div>
+<h2 id="archive-providers"><a class="header" href="#archive-providers">Archive Providers</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Provider</th><th>URL</th></tr></thead><tbody>
+<tr><td>Zenodo</td><td>https://zenodo.org</td></tr>
+<tr><td>Figshare</td><td>https://figshare.com</td></tr>
+<tr><td>Dryad</td><td>https://datadryad.org</td></tr>
+<tr><td>Dataverse</td><td>https://dataverse.harvard.edu</td></tr>
+</tbody></table>
+</div>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../sovereign/overview.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../specifications/autograd-spec.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../sovereign/overview.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../specifications/autograd-spec.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

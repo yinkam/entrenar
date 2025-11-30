@@ -1,0 +1,445 @@
+<!DOCTYPE HTML>
+<html lang="en" class="rust sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>YAML Examples Catalog - Entrenar - Training &amp; Optimization Library</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="A comprehensive guide to building neural network training systems with autograd, optimizers, LoRA/QLoRA, and quantization using EXTREME TDD methodology">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "rust";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="../toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('rust')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="../toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Entrenar - Training &amp; Optimization Library</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+                        <a href="https://github.com/paiml/entrenar/edit/main/book/src/declarative/yaml-examples.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="yaml-examples-catalog"><a class="header" href="#yaml-examples-catalog">YAML Examples Catalog</a></h1>
+<p>This page catalogs all 30 YAML configuration examples, organized by category. Each example demonstrates a specific training scenario.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<div class="table-wrapper"><table><thead><tr><th>Section</th><th>Examples</th><th>Focus Area</th></tr></thead><tbody>
+<tr><td>A</td><td>6</td><td>Basic Training &amp; Data</td></tr>
+<tr><td>B</td><td>2</td><td>Compiler-in-the-Loop</td></tr>
+<tr><td>C</td><td>4</td><td>Model Architecture</td></tr>
+<tr><td>D</td><td>4</td><td>Optimization &amp; Schedulers</td></tr>
+<tr><td>E</td><td>4</td><td>Monitoring &amp; Alerts</td></tr>
+<tr><td>F</td><td>4</td><td>Reliability &amp; Checkpoints</td></tr>
+<tr><td>G</td><td>2</td><td>Inference &amp; Output</td></tr>
+<tr><td>H</td><td>2</td><td>Research &amp; Privacy</td></tr>
+<tr><td>I</td><td>1</td><td>Ecosystem Integration</td></tr>
+<tr><td>J</td><td>1</td><td>Edge Cases</td></tr>
+</tbody></table>
+</div>
+<h2 id="section-a-basic-training--data"><a class="header" href="#section-a-basic-training--data">Section A: Basic Training &amp; Data</a></h2>
+<h3 id="mnist_cpuyaml"><a class="header" href="#mnist_cpuyaml">mnist_cpu.yaml</a></h3>
+<p>MNIST baseline training on CPU.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/mnist_cpu.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Verify alimentar downloads and caches correctly.</p>
+<h3 id="csv_datayaml"><a class="header" href="#csv_datayaml">csv_data.yaml</a></h3>
+<p>Training on local CSV tabular data.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/csv_data.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: CSV parsing robustness (headers, types).</p>
+<h3 id="parquet_datayaml"><a class="header" href="#parquet_datayaml">parquet_data.yaml</a></h3>
+<p>High-throughput columnar data loading.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/parquet_data.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Parquet read performance.</p>
+<h3 id="multiworkeryaml"><a class="header" href="#multiworkeryaml">multiworker.yaml</a></h3>
+<p>Multi-worker data loading.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/multiworker.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: No data corruption with parallel workers.</p>
+<h3 id="dropoutyaml"><a class="header" href="#dropoutyaml">dropout.yaml</a></h3>
+<p>Regularization with dropout layers.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/dropout.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Dropout disabled during validation.</p>
+<h3 id="deterministicyaml"><a class="header" href="#deterministicyaml">deterministic.yaml</a></h3>
+<p>Bit-exact reproducible training.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/deterministic.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Same seed produces identical results.</p>
+<h2 id="section-b-compiler-in-the-loop-citl"><a class="header" href="#section-b-compiler-in-the-loop-citl">Section B: Compiler-in-the-Loop (CITL)</a></h2>
+<h3 id="citl_suggestyaml"><a class="header" href="#citl_suggestyaml">citl_suggest.yaml</a></h3>
+<p>CITL optimization suggestions.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/citl_suggest.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Suggestions are actionable.</p>
+<h3 id="citl_workspaceyaml"><a class="header" href="#citl_workspaceyaml">citl_workspace.yaml</a></h3>
+<p>CITL workspace management.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/citl_workspace.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Workspace isolation.</p>
+<h2 id="section-c-model-architecture"><a class="header" href="#section-c-model-architecture">Section C: Model Architecture</a></h2>
+<h3 id="custom_archyaml"><a class="header" href="#custom_archyaml">custom_arch.yaml</a></h3>
+<p>Custom model architecture definition.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/custom_arch.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Layer connections validated.</p>
+<h3 id="llama2_mockyaml"><a class="header" href="#llama2_mockyaml">llama2_mock.yaml</a></h3>
+<p>LLaMA-2 mock model for testing.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/llama2_mock.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Architecture matches real LLaMA.</p>
+<h3 id="lorayaml"><a class="header" href="#lorayaml">lora.yaml</a></h3>
+<p>LoRA fine-tuning configuration.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/lora.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Only adapter weights updated.</p>
+<h3 id="qlorayaml"><a class="header" href="#qlorayaml">qlora.yaml</a></h3>
+<p>QLoRA 4-bit fine-tuning.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/qlora.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: VRAM usage &lt; 50% of full fine-tune.</p>
+<h2 id="section-d-optimization--schedulers"><a class="header" href="#section-d-optimization--schedulers">Section D: Optimization &amp; Schedulers</a></h2>
+<h3 id="grad_clipyaml"><a class="header" href="#grad_clipyaml">grad_clip.yaml</a></h3>
+<p>Gradient clipping for stability.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/grad_clip.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Gradient norms bounded.</p>
+<h3 id="grad_accumyaml"><a class="header" href="#grad_accumyaml">grad_accum.yaml</a></h3>
+<p>Gradient accumulation for large effective batch.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/grad_accum.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Accumulation count matches config.</p>
+<h3 id="lr_scheduleyaml"><a class="header" href="#lr_scheduleyaml">lr_schedule.yaml</a></h3>
+<p>Learning rate scheduling (cosine).</p>
+<pre><code class="language-bash">entrenar train examples/yaml/lr_schedule.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: LR follows expected curve.</p>
+<h3 id="distillationyaml"><a class="header" href="#distillationyaml">distillation.yaml</a></h3>
+<p>Knowledge distillation from teacher.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/distillation.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Student approaches teacher quality.</p>
+<h2 id="section-e-monitoring--alerts"><a class="header" href="#section-e-monitoring--alerts">Section E: Monitoring &amp; Alerts</a></h2>
+<h3 id="andonyaml"><a class="header" href="#andonyaml">andon.yaml</a></h3>
+<p>Andon alerting system (Jidoka).</p>
+<pre><code class="language-bash">entrenar train examples/yaml/andon.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Alerts trigger on anomalies.</p>
+<h3 id="outlieryaml"><a class="header" href="#outlieryaml">outlier.yaml</a></h3>
+<p>Outlier detection during training.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/outlier.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Outliers flagged, not silently ignored.</p>
+<h3 id="biasyaml"><a class="header" href="#biasyaml">bias.yaml</a></h3>
+<p>Bias detection and mitigation.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/bias.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Demographic parity metrics tracked.</p>
+<h3 id="driftyaml"><a class="header" href="#driftyaml">drift.yaml</a></h3>
+<p>Data/model drift detection.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/drift.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Drift alerts when distribution shifts.</p>
+<h2 id="section-f-reliability--checkpoints"><a class="header" href="#section-f-reliability--checkpoints">Section F: Reliability &amp; Checkpoints</a></h2>
+<h3 id="checkpointyaml"><a class="header" href="#checkpointyaml">checkpoint.yaml</a></h3>
+<p>Checkpoint saving and resumption.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/checkpoint.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Resume from checkpoint is exact.</p>
+<h3 id="config_validateyaml"><a class="header" href="#config_validateyaml">config_validate.yaml</a></h3>
+<p>Strict configuration validation.</p>
+<pre><code class="language-bash">entrenar validate examples/yaml/config_validate.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Invalid configs rejected early.</p>
+<h3 id="long_runyaml"><a class="header" href="#long_runyaml">long_run.yaml</a></h3>
+<p>Extended training duration test.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/long_run.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: No memory leaks over hours.</p>
+<h3 id="lockedyaml"><a class="header" href="#lockedyaml">locked.yaml</a></h3>
+<p>Lockfile for reproducibility.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/locked.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Lockfile pins all dependencies.</p>
+<h2 id="section-g-inference--output"><a class="header" href="#section-g-inference--output">Section G: Inference &amp; Output</a></h2>
+<h3 id="latencyyaml"><a class="header" href="#latencyyaml">latency.yaml</a></h3>
+<p>Inference latency benchmarking.</p>
+<pre><code class="language-bash">entrenar bench examples/yaml/latency.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Latency meets SLA.</p>
+<h3 id="json_outputyaml"><a class="header" href="#json_outputyaml">json_output.yaml</a></h3>
+<p>JSON format output generation.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/json_output.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: JSON is valid and complete.</p>
+<h2 id="section-h-research--privacy"><a class="header" href="#section-h-research--privacy">Section H: Research &amp; Privacy</a></h2>
+<h3 id="dpyaml"><a class="header" href="#dpyaml">dp.yaml</a></h3>
+<p>Differential privacy training.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/dp.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Privacy budget (epsilon) tracked.</p>
+<h3 id="releaseyaml"><a class="header" href="#releaseyaml">release.yaml</a></h3>
+<p>Production release configuration.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/release.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: All 25 QA points pass.</p>
+<h2 id="section-i-ecosystem-integration"><a class="header" href="#section-i-ecosystem-integration">Section I: Ecosystem Integration</a></h2>
+<h3 id="sessionyaml"><a class="header" href="#sessionyaml">session.yaml</a></h3>
+<p>Session management with Ruchy.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/session.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: Session state persists correctly.</p>
+<h2 id="section-j-edge-cases"><a class="header" href="#section-j-edge-cases">Section J: Edge Cases</a></h2>
+<h3 id="soakyaml"><a class="header" href="#soakyaml">soak.yaml</a></h3>
+<p>Soak test for extended stability.</p>
+<pre><code class="language-bash">entrenar train examples/yaml/soak.yaml
+</code></pre>
+<p><strong>QA Focus</strong>: System stable over extended period.</p>
+<h2 id="running-all-examples"><a class="header" href="#running-all-examples">Running All Examples</a></h2>
+<h3 id="validation-only"><a class="header" href="#validation-only">Validation Only</a></h3>
+<pre><code class="language-bash"># Validate all YAML configs
+for f in examples/yaml/*.yaml; do
+  echo "Validating $f..."
+  entrenar validate "$f"
+done
+</code></pre>
+<h3 id="integration-tests"><a class="header" href="#integration-tests">Integration Tests</a></h3>
+<pre><code class="language-bash"># Run all integration tests
+cargo test --test yaml_mode_integration
+</code></pre>
+<h3 id="quick-reference-table"><a class="header" href="#quick-reference-table">Quick Reference Table</a></h3>
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>Scenario</th><th>Key Config</th></tr></thead><tbody>
+<tr><td><code>mnist_cpu.yaml</code></td><td>MNIST CPU baseline</td><td><code>device: cpu</code></td></tr>
+<tr><td><code>csv_data.yaml</code></td><td>CSV data source</td><td><code>format: csv</code></td></tr>
+<tr><td><code>parquet_data.yaml</code></td><td>Parquet data</td><td><code>format: parquet</code></td></tr>
+<tr><td><code>multiworker.yaml</code></td><td>Parallel loading</td><td><code>num_workers: 4</code></td></tr>
+<tr><td><code>dropout.yaml</code></td><td>Regularization</td><td><code>dropout: 0.5</code></td></tr>
+<tr><td><code>deterministic.yaml</code></td><td>Reproducibility</td><td><code>seed: 42, deterministic: true</code></td></tr>
+<tr><td><code>citl_suggest.yaml</code></td><td>CITL suggestions</td><td><code>citl.mode: suggest</code></td></tr>
+<tr><td><code>citl_workspace.yaml</code></td><td>CITL workspace</td><td><code>citl.workspace: ...</code></td></tr>
+<tr><td><code>custom_arch.yaml</code></td><td>Custom layers</td><td><code>architecture.layers: [...]</code></td></tr>
+<tr><td><code>llama2_mock.yaml</code></td><td>LLaMA mock</td><td><code>source: builtin://llama2-mock</code></td></tr>
+<tr><td><code>lora.yaml</code></td><td>LoRA adapters</td><td><code>lora.enabled: true</code></td></tr>
+<tr><td><code>qlora.yaml</code></td><td>4-bit QLoRA</td><td><code>lora.quantize_bits: 4</code></td></tr>
+<tr><td><code>grad_clip.yaml</code></td><td>Gradient clipping</td><td><code>gradient.clip_norm: 1.0</code></td></tr>
+<tr><td><code>grad_accum.yaml</code></td><td>Accumulation</td><td><code>gradient.accumulation_steps: 8</code></td></tr>
+<tr><td><code>lr_schedule.yaml</code></td><td>LR scheduler</td><td><code>scheduler.name: cosine</code></td></tr>
+<tr><td><code>distillation.yaml</code></td><td>Distillation</td><td><code>distillation.teacher: ...</code></td></tr>
+<tr><td><code>andon.yaml</code></td><td>Alerts</td><td><code>monitoring.alerts: [...]</code></td></tr>
+<tr><td><code>outlier.yaml</code></td><td>Outlier detection</td><td><code>inspect.outliers: true</code></td></tr>
+<tr><td><code>bias.yaml</code></td><td>Bias metrics</td><td><code>inspect.bias_columns: [...]</code></td></tr>
+<tr><td><code>drift.yaml</code></td><td>Drift detection</td><td><code>monitoring.drift_detection.enabled: true</code></td></tr>
+<tr><td><code>checkpoint.yaml</code></td><td>Checkpointing</td><td><code>checkpoint.save_every: 500</code></td></tr>
+<tr><td><code>config_validate.yaml</code></td><td>Validation</td><td><code>strict_validation: true</code></td></tr>
+<tr><td><code>long_run.yaml</code></td><td>Long training</td><td><code>epochs: 100</code></td></tr>
+<tr><td><code>locked.yaml</code></td><td>Lockfile</td><td><code>lockfile: entrenar.lock</code></td></tr>
+<tr><td><code>latency.yaml</code></td><td>Latency bench</td><td><code>benchmark.target_latency_ms: 50</code></td></tr>
+<tr><td><code>json_output.yaml</code></td><td>JSON output</td><td><code>report.format: json</code></td></tr>
+<tr><td><code>dp.yaml</code></td><td>Differential privacy</td><td><code>privacy.dp.enabled: true</code></td></tr>
+<tr><td><code>release.yaml</code></td><td>Production release</td><td><code>require_peer_review: true</code></td></tr>
+<tr><td><code>session.yaml</code></td><td>Session mgmt</td><td><code>session.enabled: true</code></td></tr>
+<tr><td><code>soak.yaml</code></td><td>Soak test</td><td><code>stress.duration_hours: 8</code></td></tr>
+</tbody></table>
+</div>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<ul>
+<li><a href="./qa-process.html">QA Process</a> - 25-point checklist</li>
+<li><a href="./yaml-mode.html">YAML Mode Training</a> - Complete schema reference</li>
+<li><a href="./schema.html">Schema Reference</a> - All configuration options</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../declarative/yaml-mode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../declarative/qa-process.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../declarative/yaml-mode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../declarative/qa-process.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+        <script src="../ace.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
